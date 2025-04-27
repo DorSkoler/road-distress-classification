@@ -3,12 +3,13 @@ import torch.nn as nn
 import torchvision.models as models
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingWarmRestarts
+from torchvision.models import EfficientNet_B3_Weights, ResNet50_Weights
 
 class RoadDistressModel(nn.Module):
     """
     Model for road distress classification using a pre-trained backbone
     """
-    def __init__(self, num_classes=3, pretrained=True, backbone_type='efficientnet_b3'):
+    def __init__(self, num_classes=3, pretrained=True, backbone_type='efficientnet_b3', dropout_rate=0.5):
         """
         Initialize the model
         
@@ -16,28 +17,33 @@ class RoadDistressModel(nn.Module):
             num_classes (int): Number of output classes (default: 3 for damage, occlusion, crop)
             pretrained (bool): Whether to use pretrained weights (default: True)
             backbone_type (str): Type of backbone to use ('efficientnet_b3' or 'resnet50')
+            dropout_rate (float): Dropout rate for regularization (default: 0.5)
         """
         super(RoadDistressModel, self).__init__()
         
         # Initialize backbone based on type
         if backbone_type == 'efficientnet_b3':
-            self.backbone = models.efficientnet_b3(pretrained=pretrained)
+            weights = EfficientNet_B3_Weights.DEFAULT if pretrained else None
+            self.backbone = models.efficientnet_b3(weights=weights)
             # Replace classifier
             num_features = self.backbone.classifier[1].in_features
             self.backbone.classifier = nn.Sequential(
+                nn.Dropout(p=dropout_rate),
                 nn.Linear(num_features, 512),
                 nn.ReLU(),
-                nn.Dropout(0.5),
+                nn.Dropout(p=dropout_rate),
                 nn.Linear(512, num_classes)
             )
         elif backbone_type == 'resnet50':
-            self.backbone = models.resnet50(pretrained=pretrained)
+            weights = ResNet50_Weights.DEFAULT if pretrained else None
+            self.backbone = models.resnet50(weights=weights)
             # Replace classifier
             num_features = self.backbone.fc.in_features
             self.backbone.fc = nn.Sequential(
+                nn.Dropout(p=dropout_rate),
                 nn.Linear(num_features, 512),
                 nn.ReLU(),
-                nn.Dropout(0.5),
+                nn.Dropout(p=dropout_rate),
                 nn.Linear(512, num_classes)
             )
         else:
@@ -106,4 +112,4 @@ class RoadDistressModel(nn.Module):
         Returns:
             criterion: The loss function
         """
-        return nn.CrossEntropyLoss() 
+        return nn.BCEWithLogitsLoss()  # Using BCEWithLogitsLoss for multi-label classification 
