@@ -68,8 +68,62 @@ class ExperimentLogger:
         # Save best model if it's the best so far
         if metrics['val_acc'] == max(self.metrics['val_acc']):
             torch.save(model.state_dict(), os.path.join(self.log_dir, 'best_model.pth'))
+    
+    def close(self):
+        """Close the logger and save final metrics"""
+        # Save final metrics
+        with open(os.path.join(self.log_dir, 'final_metrics.json'), 'w') as f:
+            json.dump({
+                'best_val_acc': max(self.metrics['val_acc']),
+                'final_train_acc': self.metrics['train_acc'][-1],
+                'final_val_acc': self.metrics['val_acc'][-1],
+                'final_train_loss': self.metrics['train_loss'][-1],
+                'final_val_loss': self.metrics['val_loss'][-1]
+            }, f, indent=4)
+        
+        # Create visualization of training progress
+        self._create_training_plots()
+    
+    def _create_training_plots(self):
+        """Create and save training progress plots"""
+        try:
+            import matplotlib.pyplot as plt
+            
+            # Create accuracy plot
+            plt.figure(figsize=(10, 5))
+            plt.plot(self.metrics['train_acc'], label='Training Accuracy')
+            plt.plot(self.metrics['val_acc'], label='Validation Accuracy')
+            plt.title('Training and Validation Accuracy')
+            plt.xlabel('Epoch')
+            plt.ylabel('Accuracy')
+            plt.legend()
+            plt.savefig(os.path.join(self.log_dir, 'accuracy_plot.png'))
+            plt.close()
+            
+            # Create loss plot
+            plt.figure(figsize=(10, 5))
+            plt.plot(self.metrics['train_loss'], label='Training Loss')
+            plt.plot(self.metrics['val_loss'], label='Validation Loss')
+            plt.title('Training and Validation Loss')
+            plt.xlabel('Epoch')
+            plt.ylabel('Loss')
+            plt.legend()
+            plt.savefig(os.path.join(self.log_dir, 'loss_plot.png'))
+            plt.close()
+            
+            # Create learning rate plot
+            plt.figure(figsize=(10, 5))
+            plt.plot(self.metrics['lr'])
+            plt.title('Learning Rate Schedule')
+            plt.xlabel('Epoch')
+            plt.ylabel('Learning Rate')
+            plt.savefig(os.path.join(self.log_dir, 'lr_plot.png'))
+            plt.close()
+            
+        except ImportError:
+            print("Warning: matplotlib not installed. Skipping plot generation.")
 
-def train_epoch(model, train_loader, criterion, optimizer, scheduler, device, scaler):
+def train_epoch(model, train_loader, criterion, optimizer, scheduler, device, scaler, gradient_clip):
     """Train for one epoch"""
     model.train()
     total_loss = 0
@@ -88,6 +142,11 @@ def train_epoch(model, train_loader, criterion, optimizer, scheduler, device, sc
             loss = criterion(outputs, labels)
         
         scaler.scale(loss).backward()
+        
+        # Apply gradient clipping
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip)
+        
         scaler.step(optimizer)
         scaler.update()
         
@@ -147,52 +206,72 @@ def main():
         'dropout_rate': 0.5  # Increased dropout for better regularization
     }
     
-    # Training configuration
-    train_config = {
-        'batch_size': 32,
-        'num_epochs': 50,
-        'learning_rate': 0.0005,  # Reduced learning rate for more stable training
-        'weight_decay': 0.01,  # Increased weight decay for better regularization
-        'gradient_clip': 1.0,
-        'early_stopping_patience': 5,
-        'scheduler': {
-            'type': 'CosineAnnealingWarmRestarts',
-            'T_0': 10,  # Restart every 10 epochs
-            'T_mult': 2,  # Double the restart interval after each restart
-            'eta_min': 1e-6  # Minimum learning rate
-        }
-    }
-    
-    # Augmentation configuration
-    aug_config = {
-        'resize': (224, 224),
-        'random_horizontal_flip': True,
-        'random_rotation': 15,
+    # Data augmentation configuration
+    augmentation_config = {
+        'random_horizontal_flip': {'p': 0.5},
+        'random_vertical_flip': {'p': 0.3},
+        'random_rotation': {'degrees': 15, 'p': 0.5},
         'color_jitter': {
-            'brightness': 0.3,  # Increased brightness jitter
-            'contrast': 0.3,    # Increased contrast jitter
-            'saturation': 0.3,  # Increased saturation jitter
-            'hue': 0.1
+            'brightness': 0.3,
+            'contrast': 0.3,
+            'saturation': 0.3,
+            'hue': 0.1,
+            'p': 0.8
         },
         'random_affine': {
-            'degrees': 15,      # Increased rotation range
-            'translate': (0.15, 0.15),  # Increased translation range
-            'scale': (0.8, 1.2)  # Increased scale range
+            'degrees': 10,
+            'translate': (0.1, 0.1),
+            'scale': (0.9, 1.1),
+            'shear': 5,
+            'p': 0.5
         },
-        'random_erasing': {     # Added random erasing
+        'random_perspective': {
+            'distortion_scale': 0.2,
+            'p': 0.3
+        },
+        'random_erasing': {
             'p': 0.5,
             'scale': (0.02, 0.2),
-            'ratio': (0.3, 3.3)
+            'ratio': (0.3, 3.3),
+            'value': 'random'
         },
-        'normalize': {
-            'mean': [0.485, 0.456, 0.406],
-            'std': [0.229, 0.224, 0.225]
+        'gaussian_blur': {
+            'kernel_size': 3,
+            'sigma': (0.1, 2.0),
+            'p': 0.3
+        },
+        'random_adjust_sharpness': {
+            'sharpness_factor': 2,
+            'p': 0.3
+        },
+        'random_autocontrast': {'p': 0.3},
+        'random_equalize': {'p': 0.3}
+    }
+    
+    # Training configuration
+    training_config = {
+        'batch_size': 32,
+        'num_epochs': 50,
+        'learning_rate': 0.0005,
+        'weight_decay': 0.01,
+        'early_stopping_patience': 10,
+        'gradient_clip': 1.0,
+        'lr_scheduler': {
+            'type': 'cosine',
+            'T_max': 50,
+            'eta_min': 1e-6,
+            'warmup_epochs': 5
+        },
+        'optimizer': {
+            'type': 'adamw',
+            'betas': (0.9, 0.999),
+            'eps': 1e-8
         }
     }
     
     # Initialize logger
     logger = ExperimentLogger(experiment_name)
-    logger.log_config(model_config, train_config, aug_config)
+    logger.log_config(model_config, training_config, augmentation_config)
     
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -216,14 +295,14 @@ def main():
     # Create data loaders
     train_loader = DataLoader(
         train_dataset,
-        batch_size=train_config['batch_size'],
+        batch_size=training_config['batch_size'],
         shuffle=True,
         num_workers=4,
         pin_memory=True
     )
     val_loader = DataLoader(
         val_dataset,
-        batch_size=train_config['batch_size'],
+        batch_size=training_config['batch_size'],
         shuffle=False,
         num_workers=4,
         pin_memory=True
@@ -234,10 +313,14 @@ def main():
     
     # Initialize optimizer and scheduler
     optimizer = model.get_optimizer(
-        learning_rate=train_config['learning_rate'],
-        weight_decay=train_config['weight_decay']
+        learning_rate=training_config['learning_rate'],
+        weight_decay=training_config['weight_decay']
     )
-    scheduler = model.get_scheduler(optimizer, train_config['num_epochs'])
+    scheduler = model.get_scheduler(
+        optimizer,
+        training_config['num_epochs'],
+        warmup_epochs=training_config['lr_scheduler']['warmup_epochs']
+    )
     
     # Initialize loss function
     criterion = nn.BCEWithLogitsLoss()  # Changed to BCEWithLogitsLoss for multi-label classification
@@ -249,12 +332,13 @@ def main():
     best_val_loss = float('inf')
     patience_counter = 0
     
-    for epoch in range(train_config['num_epochs']):
-        print(f"\nEpoch {epoch+1}/{train_config['num_epochs']}")
+    for epoch in range(training_config['num_epochs']):
+        print(f"\nEpoch {epoch+1}/{training_config['num_epochs']}")
         
         # Training phase
         train_loss, train_acc = train_epoch(
-            model, train_loader, criterion, optimizer, scheduler, device, scaler
+            model, train_loader, criterion, optimizer, scheduler, device, scaler,
+            training_config['gradient_clip']
         )
         
         # Validation phase
@@ -286,7 +370,7 @@ def main():
             patience_counter = 0
         else:
             patience_counter += 1
-            if patience_counter >= train_config['early_stopping_patience']:
+            if patience_counter >= training_config['early_stopping_patience']:
                 print(f'Early stopping triggered after {epoch + 1} epochs')
                 break
         

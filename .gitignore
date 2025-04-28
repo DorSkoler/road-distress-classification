@@ -4,6 +4,7 @@ raw_dataset/
 experiments/
 visualizations/
 data/
+visualization_results/
 
 # Python
 __pycache__/

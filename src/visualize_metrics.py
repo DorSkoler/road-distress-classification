@@ -96,7 +96,7 @@ def main():
     metrics_dict = {}
     accuracies_dict = {}
     
-    for model_name in ['efficientnet_b3', 'resnet50']:
+    for model_name in ['efficientnet_b3_enhanced_20250427_210718']:
         experiment_dir = os.path.join('experiments', model_name)
         if os.path.exists(experiment_dir):
             metrics_dict[model_name] = load_metrics(experiment_dir)

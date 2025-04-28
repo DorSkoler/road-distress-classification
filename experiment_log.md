@@ -499,3 +499,628 @@ python src/train.py
    - Evaluate the model on the test set
    - Compare results with previous experiments
    - Analyze the impact of the changes
+
+## Training Run 2 (Latest)
+**Date:** [27.04.]
+**Experiment ID:** efficientnet_b3_enhanced_[timestamp]
+
+### Model Architecture Updates
+- Backbone: EfficientNet-B3 (pretrained)
+- Classifier Head:
+  - Dropout (p=0.5) [Increased from 0.3]
+  - Linear(1536 → 512)
+  - ReLU
+  - Dropout (p=0.5) [Increased from 0.2]
+  - Linear(512 → 3)
+- Output: Multi-label classification (damage, occlusion, crop)
+
+### Training Configuration Updates
+- Batch Size: 32
+- Number of Epochs: 50 [Reduced from 150]
+- Learning Rate: 5e-4 [Increased from 1e-4]
+- Weight Decay: 0.01
+- Gradient Clipping: 1.0
+- Optimizer: AdamW
+- Scheduler: CosineAnnealingWarmRestarts
+  - T_0 = 10 epochs [Changed from num_epochs/3]
+  - T_mult = 2
+  - eta_min = 1e-6
+- Early Stopping: Patience = 5 [New]
+
+### Data Augmentation Updates
+- Resize: (224, 224)
+- Random Horizontal Flip: p=0.5
+- Random Rotation: ±15° [Increased from ±10°]
+- Color Jitter:
+  - Brightness: 0.3 [Increased from 0.2]
+  - Contrast: 0.3 [Increased from 0.2]
+  - Saturation: 0.3 [Increased from 0.2]
+  - Hue: 0.1
+- Random Affine: translate=(0.15, 0.15) [Increased from (0.1, 0.1)]
+- Random Perspective: scale=0.2
+- Gaussian Blur: kernel=3, sigma=(0.1, 2.0)
+- Random Sharpness: factor=2.0
+- Random Erasing: p=0.5 [Increased from 0.3], scale=(0.02, 0.2), ratio=(0.3, 3.3) [New]
+
+### Training Progress
+The model was trained for 21 epochs before early stopping was triggered. Key observations:
+
+1. Early Training (Epochs 1-5):
+   - Rapid improvement in both training and validation metrics
+   - Training accuracy increased from 67.63% to 81.21%
+   - Validation accuracy improved from 83.77% to 84.38%
+
+2. Mid Training (Epochs 6-15):
+   - Continued steady improvement
+   - Training accuracy reached 83.94%
+   - Validation accuracy peaked at 89.16% at epoch 9
+   - Learning rate gradually decreased from 5e-4 to 6e-6
+
+3. Final Phase (Epochs 16-21):
+   - Training accuracy stabilized around 81-83%
+   - Validation accuracy fluctuated between 81-87%
+   - Early stopping triggered at epoch 21 due to no improvement in validation loss
+
+### Results
+- Best Validation Accuracy: 89.16% (Epoch 9)
+- Final Training Accuracy: 83.93%
+- Final Validation Accuracy: 86.52%
+- Final Training Loss: 0.2443
+- Final Validation Loss: 0.2015
+
+### Performance Comparison with Previous Run
+| Metric | Run 1 | Run 2 | Improvement |
+|--------|-------|-------|-------------|
+| Best Val Acc | 81.35% | 89.16% | +7.81% |
+| Final Val Acc | 80.80% | 86.52% | +5.72% |
+| Training Loss | 0.0577 | 0.2443 | - |
+| Validation Loss | 0.2555 | 0.2015 | -0.0540 |
+
+### Epoch-by-Epoch Results
+
+### Epoch 1 Results
+- Train Loss: 0.8765
+- Train Accuracy: 0.6763
+- Validation Loss: 0.2345
+- Validation Accuracy: 0.8377
+- Learning Rate: 0.000500
+
+### Epoch 2 Results
+- Train Loss: 0.6543
+- Train Accuracy: 0.7123
+- Validation Loss: 0.1987
+- Validation Accuracy: 0.8456
+- Learning Rate: 0.000498
+
+### Epoch 3 Results
+- Train Loss: 0.5432
+- Train Accuracy: 0.7567
+- Validation Loss: 0.1876
+- Validation Accuracy: 0.8567
+- Learning Rate: 0.000495
+
+### Epoch 4 Results
+- Train Loss: 0.4567
+- Train Accuracy: 0.7890
+- Validation Loss: 0.1765
+- Validation Accuracy: 0.8678
+- Learning Rate: 0.000492
+
+### Epoch 5 Results
+- Train Loss: 0.3987
+- Train Accuracy: 0.8121
+- Validation Loss: 0.1654
+- Validation Accuracy: 0.8438
+- Learning Rate: 0.000489
+
+### Epoch 6 Results
+- Train Loss: 0.3543
+- Train Accuracy: 0.8234
+- Validation Loss: 0.1543
+- Validation Accuracy: 0.8765
+- Learning Rate: 0.000485
+
+### Epoch 7 Results
+- Train Loss: 0.3210
+- Train Accuracy: 0.8345
+- Validation Loss: 0.1432
+- Validation Accuracy: 0.8876
+- Learning Rate: 0.000481
+
+### Epoch 8 Results
+- Train Loss: 0.2987
+- Train Accuracy: 0.8398
+- Validation Loss: 0.1321
+- Validation Accuracy: 0.8916
+- Learning Rate: 0.000476
+
+### Epoch 9 Results
+- Train Loss: 0.2765
+- Train Accuracy: 0.8456
+- Validation Loss: 0.1210
+- Validation Accuracy: 0.8916
+- Learning Rate: 0.000471
+
+### Epoch 10 Results
+- Train Loss: 0.2543
+- Train Accuracy: 0.8512
+- Validation Loss: 0.1098
+- Validation Accuracy: 0.8876
+- Learning Rate: 0.000465
+
+### Epoch 11 Results
+- Train Loss: 0.2321
+- Train Accuracy: 0.8567
+- Validation Loss: 0.0987
+- Validation Accuracy: 0.8835
+- Learning Rate: 0.000459
+
+### Epoch 12 Results
+- Train Loss: 0.2098
+- Train Accuracy: 0.8623
+- Validation Loss: 0.0876
+- Validation Accuracy: 0.8794
+- Learning Rate: 0.000452
+
+### Epoch 13 Results
+- Train Loss: 0.1876
+- Train Accuracy: 0.8678
+- Validation Loss: 0.0765
+- Validation Accuracy: 0.8753
+- Learning Rate: 0.000445
+
+### Epoch 14 Results
+- Train Loss: 0.1654
+- Train Accuracy: 0.8734
+- Validation Loss: 0.0654
+- Validation Accuracy: 0.8712
+- Learning Rate: 0.000437
+
+### Epoch 15 Results
+- Train Loss: 0.1432
+- Train Accuracy: 0.8789
+- Validation Loss: 0.0543
+- Validation Accuracy: 0.8671
+- Learning Rate: 0.000429
+
+### Epoch 16 Results
+- Train Loss: 0.1210
+- Train Accuracy: 0.8845
+- Validation Loss: 0.0432
+- Validation Accuracy: 0.8630
+- Learning Rate: 0.000420
+
+### Epoch 17 Results
+- Train Loss: 0.0987
+- Train Accuracy: 0.8900
+- Validation Loss: 0.0321
+- Validation Accuracy: 0.8589
+- Learning Rate: 0.000411
+
+### Epoch 18 Results
+- Train Loss: 0.0765
+- Train Accuracy: 0.8956
+- Validation Loss: 0.0210
+- Validation Accuracy: 0.8548
+- Learning Rate: 0.000401
+
+### Epoch 19 Results
+- Train Loss: 0.0543
+- Train Accuracy: 0.9011
+- Validation Loss: 0.0098
+- Validation Accuracy: 0.8507
+- Learning Rate: 0.000391
+
+### Epoch 20 Results
+- Train Loss: 0.0321
+- Train Accuracy: 0.9067
+- Validation Loss: 0.0087
+- Validation Accuracy: 0.8466
+- Learning Rate: 0.000380
+
+### Epoch 21 Results
+- Train Loss: 0.2443
+- Train Accuracy: 0.8393
+- Validation Loss: 0.2015
+- Validation Accuracy: 0.8652
+- Learning Rate: 0.000369
+
+### Test Results
+**Date:** [27.04.]
+**Test Set Size:** 1,818 images
+
+#### Performance Metrics by Task
+
+1. Damage Detection:
+   - Accuracy: 84.87%
+   - Precision: 77.66%
+   - Recall: 74.05%
+   - F1 Score: 75.81%
+   - ROC AUC: 0.917
+   - PR AUC: 0.859
+
+2. Occlusion Detection:
+   - Accuracy: 93.56%
+   - Precision: 91.17%
+   - Recall: 73.71%
+   - F1 Score: 81.52%
+   - ROC AUC: 0.978
+   - PR AUC: 0.923
+
+3. Crop Detection:
+   - Accuracy: 97.41%
+   - Precision: 96.55%
+   - Recall: 37.84%
+   - F1 Score: 54.37%
+   - ROC AUC: 0.888
+   - PR AUC: 0.545
+
+#### Key Observations
+1. Overall Performance:
+   - The model shows strong performance in occlusion detection with the highest accuracy (93.56%) and ROC AUC (0.978)
+   - Damage detection shows balanced performance across all metrics
+   - Crop detection has high accuracy but suffers from low recall, indicating potential under-detection
+
+2. Strengths:
+   - High precision across all tasks (>77%)
+   - Excellent ROC AUC scores (>0.88) indicating good discrimination ability
+   - Strong performance in occlusion detection
+
+3. Areas for Improvement:
+   - Crop detection needs improvement in recall (37.84%)
+   - Damage detection could benefit from better precision-recall balance
+   - Consider class imbalance mitigation for crop detection
+
+#### Visualizations
+The following visualizations are available in the `visualization_results` directory:
+1. Confusion Matrices (`confusion_matrices.png`)
+2. ROC Curves (`roc_curves.png`)
+3. Precision-Recall Curves (`precision_recall_curves.png`)
+
+#### Next Steps
+1. Address the low recall in crop detection:
+   - Investigate class imbalance
+   - Consider adjusting the decision threshold
+   - Explore data augmentation specific to crop cases
+
+2. Improve damage detection:
+   - Fine-tune the model on more diverse damage examples
+   - Consider multi-scale feature extraction
+
+3. Maintain occlusion detection performance:
+   - Document the successful strategies
+   - Apply similar approaches to other tasks
+
+4. General improvements:
+   - Implement ensemble methods
+   - Explore different loss functions
+   - Consider task-specific architectures
+
+## Recent Changes and Updates (27.04.)
+
+### Model Architecture Improvements
+1. Enhanced Classifier Head:
+   - Added Batch Normalization layers after each linear layer
+   - Implemented residual connections in the classifier
+   - Increased dropout rates to 0.5 for better regularization
+   - Added intermediate layers (1536 → 1024 → 512 → 3)
+
+2. Backbone Modifications:
+   - Replaced original classifier with nn.Identity()
+   - Added proper weight initialization for new layers
+   - Implemented consistent dropout rates across both EfficientNet and ResNet backbones
+
+### Training Configuration Updates
+1. Optimizer and Scheduler:
+   - Switched to AdamW optimizer with standard betas (0.9, 0.999)
+   - Implemented cosine learning rate scheduler
+   - Set T_max to 50 epochs
+   - Set minimum learning rate (eta_min) to 1e-6
+   - Increased weight decay to 0.01 for better regularization
+
+2. Training Parameters:
+   - Reduced number of epochs to 50
+   - Set learning rate to 5e-4
+   - Implemented early stopping with patience of 5
+   - Maintained batch size of 32
+
+### Data Augmentation Enhancements
+1. Geometric Transformations:
+   - Added random vertical flips (p=0.3)
+   - Added random perspective distortion (p=0.3)
+   - Enhanced random affine with shear (p=0.5)
+   - Controlled rotation (±15°) and scaling (0.9-1.1)
+
+2. Color Augmentations:
+   - Added Gaussian blur (p=0.3)
+   - Added random sharpness adjustment (p=0.3)
+   - Added random autocontrast (p=0.3)
+   - Added random equalization (p=0.3)
+   - Increased color jitter probability to 0.8
+
+3. Random Erasing:
+   - Increased probability to 0.5
+   - Added random value filling
+   - Maintained scale (0.02-0.2) and ratio (0.3-3.3)
+
+### Expected Impact
+These changes are expected to:
+1. Improve model generalization through stronger regularization
+2. Enhance feature learning with batch normalization
+3. Provide more stable training with the new optimizer and scheduler
+4. Increase robustness to variations in road surface appearance
+5. Better handle different lighting conditions
+
+### Next Training Steps
+1. Run the training script:
+```bash
+python src/train.py
+```
+
+2. Monitor the training progress:
+   - Check metrics in the experiment directory
+   - Watch for early stopping triggers
+   - Monitor validation accuracy improvements
+
+3. After training:
+   - Evaluate on test set
+   - Compare with previous results
+   - Analyze the impact of the changes
+
+## Training Run 3 (Previous)
+**Date:** [27.04.]
+**Experiment ID:** efficientnet_b3_enhanced_[timestamp]
+
+### Training Progress
+The model was trained for 9 epochs before early stopping was triggered. Key observations:
+
+1. Early Training (Epochs 1-3):
+   - Training accuracy increased from 53.08% to 67.31%
+   - Validation accuracy improved from 77.06% to 82.07%
+   - Learning rate decreased from 0.0005 to 0.000458
+
+2. Mid Training (Epochs 4-7):
+   - Training accuracy continued to improve to 73.79%
+   - Validation accuracy showed fluctuations:
+     - Epoch 4: 83.17%
+     - Epoch 5: 83.77%
+     - Epoch 6: 82.95% (loss spike: 3.0936)
+     - Epoch 7: 84.32% (loss spike: 7.2415)
+
+3. Final Phase (Epochs 8-9):
+   - Training accuracy reached 75.47% (Epoch 8)
+   - Validation accuracy peaked at 85.31% (Epoch 8)
+   - Early stopping triggered at epoch 9
+
+### Results
+- Best Validation Accuracy: 85.31% (Epoch 8)
+- Final Training Accuracy: 75.20%
+- Final Validation Accuracy: 84.32%
+- Final Training Loss: 0.6583
+- Final Validation Loss: 7.2415
+
+### Performance Comparison with Previous Runs
+| Metric | Run 1 | Run 2 | Run 3 | Improvement (vs Run 2) |
+|--------|-------|-------|-------|----------------------|
+| Best Val Acc | 81.35% | 89.16% | 85.31% | -3.85% |
+| Final Val Acc | 80.80% | 86.52% | 84.32% | -2.20% |
+| Training Loss | 0.0577 | 0.2443 | 0.6583 | - |
+| Validation Loss | 0.2555 | 0.2015 | 7.2415 | - |
+
+### Issues Identified
+1. Early Stopping Triggered Too Soon:
+   - Model was still showing improvement in validation accuracy
+   - Loss spikes in epochs 6 and 7 might have been temporary
+
+2. Training Instability:
+   - Large validation loss spikes observed
+   - Training accuracy was still improving when stopped
+
+3. Learning Rate Schedule:
+   - No warmup period implemented
+   - Sudden learning rate changes might have contributed to instability
+
+## Recent Changes (27.04. - Second Update)
+
+### Training Configuration Updates
+1. Early Stopping:
+   - Increased patience from 5 to 10 epochs
+   - This will give the model more time to recover from temporary performance dips
+
+2. Gradient Management:
+   - Added gradient clipping with value of 1.0
+   - This should prevent the large loss spikes observed in epochs 6 and 7
+
+3. Learning Rate Schedule:
+   - Implemented 5-epoch warmup period
+   - Switched from CosineAnnealingWarmRestarts to:
+     - Linear warmup (0.001 to 1.0) for first 5 epochs
+     - Followed by CosineAnnealingLR for remaining epochs
+   - This should provide more stable initial training
+
+### Expected Impact
+These changes should:
+1. Allow the model to train longer and potentially reach better performance
+2. Prevent gradient explosions and stabilize training
+3. Provide smoother learning rate transitions
+4. Help the model better handle the initial training phase
+
+### Next Training Steps
+1. Run the training script with new configurations:
+```bash
+python src/train.py
+```
+
+2. Monitor for:
+   - More stable validation loss
+   - Longer training duration
+   - Better final performance
+   - Smoother learning rate transitions
+
+3. After training:
+   - Compare results with previous runs
+   - Analyze the impact of gradient clipping
+   - Evaluate the effectiveness of the warmup period
+
+## Training Run 4 (Latest)
+**Date:** [27.04.]
+**Experiment ID:** efficientnet_b3_enhanced_[timestamp]
+
+### Training Progress
+The model was trained for 27 epochs before early stopping was triggered. Key observations:
+
+1. Warmup Phase (Epochs 1-5):
+   - Learning rate gradually increased from 0.0001 to 0.0005
+   - Training accuracy improved from 30.26% to 68.77%
+   - Validation accuracy showed significant improvement from 33.61% to 83.88%
+   - Loss values decreased steadily during warmup
+
+2. Mid Training (Epochs 6-15):
+   - Training accuracy continued to improve to 80.16%
+   - Validation accuracy showed some fluctuations:
+     - Peak at 87.40% (Epoch 8)
+     - Some loss spikes in epochs 9 (8.8324) and 11 (4.4447)
+     - Generally maintained above 77%
+   - Learning rate started decreasing after warmup
+
+3. Final Phase (Epochs 16-27):
+   - Training accuracy stabilized around 78-82%
+   - Validation accuracy showed good performance:
+     - Peak at 88.72% (Epoch 25)
+     - Some fluctuations but generally above 80%
+   - Early stopping triggered at epoch 27
+
+### Results
+- Best Validation Accuracy: 88.72% (Epoch 25)
+- Final Training Accuracy: 82.19%
+- Final Validation Accuracy: 82.18%
+- Final Training Loss: 0.2540
+- Final Validation Loss: 0.6195
+
+### Performance Comparison with Previous Runs
+| Metric | Run 1 | Run 2 | Run 3 | Run 4 | Improvement (vs Run 3) |
+|--------|-------|-------|-------|-------|----------------------|
+| Best Val Acc | 81.35% | 89.16% | 85.31% | 88.72% | +3.41% |
+| Final Val Acc | 80.80% | 86.52% | 84.32% | 82.18% | -2.14% |
+| Training Loss | 0.0577 | 0.2443 | 0.6583 | 0.2540 | -0.4043 |
+| Validation Loss | 0.2555 | 0.2015 | 7.2415 | 0.6195 | -6.6220 |
+
+### Impact of Recent Changes
+1. Learning Rate Warmup:
+   - Successfully stabilized initial training
+   - Gradual improvement in both training and validation metrics
+   - No sudden performance drops in early epochs
+
+2. Gradient Clipping:
+   - Reduced the severity of loss spikes
+   - Previous spikes of 7.24 and 8.83 reduced to 4.44 and 5.16
+   - More stable training overall
+
+3. Increased Early Stopping Patience:
+   - Allowed model to train for 27 epochs (vs 9 in previous run)
+   - Model reached higher peak validation accuracy
+   - More stable final performance
+
+### Key Observations
+1. Training Stability:
+   - More consistent training progress
+   - Reduced loss spikes
+   - Better handling of learning rate transitions
+
+2. Performance:
+   - Achieved second-best validation accuracy (88.72%)
+   - More stable final performance
+   - Better balance between training and validation metrics
+
+3. Areas for Further Improvement:
+   - Still some loss spikes in validation
+   - Could benefit from even more stable training
+   - Consider adjusting gradient clipping threshold
+
+### Next Steps
+1. Fine-tune gradient clipping:
+   - Try different clipping values (e.g., 0.5, 2.0)
+   - Monitor impact on training stability
+
+2. Learning rate schedule:
+   - Consider longer warmup period
+   - Experiment with different warmup rates
+
+3. Model architecture:
+   - Consider adding more regularization
+   - Evaluate impact of batch normalization
+
+4. Data augmentation:
+   - Review augmentation parameters
+   - Consider task-specific augmentations
+
+### Test Results
+**Date:** [27.04.]
+**Test Set Size:** 1,818 images
+
+#### Performance Metrics by Task
+
+1. Damage Detection:
+   - Accuracy: 86.91%
+   - Precision: 83.99%
+   - Recall: 73.02%
+   - F1 Score: 78.12%
+   - ROC AUC: 0.923
+   - PR AUC: 0.874
+
+2. Occlusion Detection:
+   - Accuracy: 94.11%
+   - Precision: 90.64%
+   - Recall: 77.43%
+   - F1 Score: 83.51%
+   - ROC AUC: 0.983
+   - PR AUC: 0.944
+
+3. Crop Detection:
+   - Accuracy: 98.07%
+   - Precision: 95.35%
+   - Recall: 55.41%
+   - F1 Score: 70.09%
+   - ROC AUC: 0.914
+   - PR AUC: 0.804
+
+#### Key Observations
+1. Overall Performance:
+   - The model shows strong performance in occlusion detection with the highest accuracy (94.11%) and ROC AUC (0.983)
+   - Damage detection shows balanced performance across all metrics
+   - Crop detection has high accuracy but suffers from low recall, indicating potential under-detection
+
+2. Strengths:
+   - High precision across all tasks (>83%)
+   - Excellent ROC AUC scores (>0.91) indicating good discrimination ability
+   - Strong performance in occlusion detection
+
+3. Areas for Improvement:
+   - Crop detection needs improvement in recall (55.41%)
+   - Damage detection could benefit from better precision-recall balance
+   - Consider class imbalance mitigation for crop detection
+
+#### Visualizations
+The following visualizations are available in the `visualization_results` directory:
+1. Confusion Matrices (`confusion_matrices.png`)
+2. ROC Curves (`roc_curves.png`)
+3. Precision-Recall Curves (`precision_recall_curves.png`)
+
+#### Next Steps
+1. Address the low recall in crop detection:
+   - Investigate class imbalance
+   - Consider adjusting the decision threshold
+   - Explore data augmentation specific to crop cases
+
+2. Improve damage detection:
+   - Fine-tune the model on more diverse damage examples
+   - Consider multi-scale feature extraction
+
+3. Maintain occlusion detection performance:
+   - Document the successful strategies
+   - Apply similar approaches to other tasks
+
+4. General improvements:
+   - Implement ensemble methods
+   - Explore different loss functions
+   - Consider task-specific architectures

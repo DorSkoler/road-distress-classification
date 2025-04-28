@@ -68,13 +68,39 @@ def evaluate_model(model, test_loader, device):
     all_labels = np.array(all_labels)
     all_probs = np.array(all_probs)
     
-    # Generate confusion matrix
+    # Calculate metrics for each task
+    task_names = ['Damage', 'Occlusion', 'Crop']
+    metrics = {}
+    
+    for i, task in enumerate(task_names):
+        # Calculate basic metrics
+        accuracy = np.mean(all_labels[:, i] == all_preds[:, i]) * 100
+        precision = np.sum((all_preds[:, i] == 1) & (all_labels[:, i] == 1)) / np.sum(all_preds[:, i] == 1) * 100
+        recall = np.sum((all_preds[:, i] == 1) & (all_labels[:, i] == 1)) / np.sum(all_labels[:, i] == 1) * 100
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+        
+        # Calculate ROC and PR curves
+        fpr, tpr, _ = roc_curve(all_labels[:, i], all_probs[:, i])
+        roc_auc = auc(fpr, tpr)
+        precision_curve, recall_curve, _ = precision_recall_curve(all_labels[:, i], all_probs[:, i])
+        pr_auc = auc(recall_curve, precision_curve)
+        
+        metrics[task] = {
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+            'roc_auc': roc_auc,
+            'pr_auc': pr_auc
+        }
+    
+    # Generate confusion matrices
     plt.figure(figsize=(15, 5))
-    for i, class_name in enumerate(['Damage', 'Occlusion', 'Crop']):
+    for i, task in enumerate(task_names):
         plt.subplot(1, 3, i+1)
         cm = confusion_matrix(all_labels[:, i], all_preds[:, i])
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-        plt.title(f'Confusion Matrix - {class_name}')
+        plt.title(f'Confusion Matrix - {task}')
         plt.ylabel('True Label')
         plt.xlabel('Predicted Label')
     plt.tight_layout()
@@ -83,10 +109,9 @@ def evaluate_model(model, test_loader, device):
     
     # Generate ROC curves
     plt.figure(figsize=(10, 8))
-    for i, class_name in enumerate(['Damage', 'Occlusion', 'Crop']):
+    for i, task in enumerate(task_names):
         fpr, tpr, _ = roc_curve(all_labels[:, i], all_probs[:, i])
-        roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, label=f'{class_name} (AUC = {roc_auc:.2f})')
+        plt.plot(fpr, tpr, label=f'{task} (AUC = {metrics[task]["roc_auc"]:.2f})')
     
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
@@ -100,10 +125,9 @@ def evaluate_model(model, test_loader, device):
     
     # Generate Precision-Recall curves
     plt.figure(figsize=(10, 8))
-    for i, class_name in enumerate(['Damage', 'Occlusion', 'Crop']):
+    for i, task in enumerate(task_names):
         precision, recall, _ = precision_recall_curve(all_labels[:, i], all_probs[:, i])
-        pr_auc = auc(recall, precision)
-        plt.plot(recall, precision, label=f'{class_name} (AUC = {pr_auc:.2f})')
+        plt.plot(recall, precision, label=f'{task} (AUC = {metrics[task]["pr_auc"]:.2f})')
     
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -114,23 +138,23 @@ def evaluate_model(model, test_loader, device):
     plt.savefig('visualization_results/precision_recall_curves.png')
     plt.close()
     
-    # Print classification report
-    print("\nClassification Report:")
-    for i, class_name in enumerate(['Damage', 'Occlusion', 'Crop']):
-        print(f"\n{class_name}:")
-        print(classification_report(all_labels[:, i], all_preds[:, i]))
+    # Print detailed metrics
+    print("\nDetailed Metrics:")
+    print("=" * 50)
+    for task, task_metrics in metrics.items():
+        print(f"\n{task}:")
+        print(f"Accuracy: {task_metrics['accuracy']:.2f}%")
+        print(f"Precision: {task_metrics['precision']:.2f}%")
+        print(f"Recall: {task_metrics['recall']:.2f}%")
+        print(f"F1 Score: {task_metrics['f1']:.2f}%")
+        print(f"ROC AUC: {task_metrics['roc_auc']:.3f}")
+        print(f"PR AUC: {task_metrics['pr_auc']:.3f}")
     
     # Save metrics
-    metrics = {
-        'classification_report': {
-            'Damage': classification_report(all_labels[:, 0], all_preds[:, 0], output_dict=True),
-            'Occlusion': classification_report(all_labels[:, 1], all_preds[:, 1], output_dict=True),
-            'Crop': classification_report(all_labels[:, 2], all_preds[:, 2], output_dict=True)
-        }
-    }
-    
     with open('visualization_results/test_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=4)
+    
+    return metrics
 
 def main():
     # Create visualization results directory
@@ -141,11 +165,11 @@ def main():
     print(f"Using device: {device}")
     
     # Load model and data
-    model_path = 'experiments/efficientnet_b3_base/best_model.pth'
+    model_path = 'experiments/efficientnet_b3_enhanced_20250427_230032/best_model.pth'
     model, test_loader = load_model_and_data(model_path, device)
     
     # Evaluate model and generate visualizations
-    evaluate_model(model, test_loader, device)
+    metrics = evaluate_model(model, test_loader, device)
     
     print("\nEvaluation completed! Results saved in visualization_results/")
 

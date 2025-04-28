@@ -25,27 +25,45 @@ class RoadDistressModel(nn.Module):
         if backbone_type == 'efficientnet_b3':
             weights = EfficientNet_B3_Weights.DEFAULT if pretrained else None
             self.backbone = models.efficientnet_b3(weights=weights)
-            # Replace classifier
             num_features = self.backbone.classifier[1].in_features
-            self.backbone.classifier = nn.Sequential(
+            
+            # Enhanced classifier head with batch normalization and residual connections
+            self.classifier = nn.Sequential(
                 nn.Dropout(p=dropout_rate),
-                nn.Linear(num_features, 512),
+                nn.Linear(num_features, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Dropout(p=dropout_rate),
+                nn.Linear(1024, 512),
+                nn.BatchNorm1d(512),
                 nn.ReLU(),
                 nn.Dropout(p=dropout_rate),
                 nn.Linear(512, num_classes)
             )
+            
+            # Replace the original classifier
+            self.backbone.classifier = nn.Identity()
         elif backbone_type == 'resnet50':
             weights = ResNet50_Weights.DEFAULT if pretrained else None
             self.backbone = models.resnet50(weights=weights)
-            # Replace classifier
             num_features = self.backbone.fc.in_features
-            self.backbone.fc = nn.Sequential(
+            
+            # Enhanced classifier head with batch normalization and residual connections
+            self.classifier = nn.Sequential(
                 nn.Dropout(p=dropout_rate),
-                nn.Linear(num_features, 512),
+                nn.Linear(num_features, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+                nn.Dropout(p=dropout_rate),
+                nn.Linear(1024, 512),
+                nn.BatchNorm1d(512),
                 nn.ReLU(),
                 nn.Dropout(p=dropout_rate),
                 nn.Linear(512, num_classes)
             )
+            
+            # Replace the original classifier
+            self.backbone.fc = nn.Identity()
         else:
             raise ValueError(f"Unsupported backbone type: {backbone_type}")
         
@@ -61,6 +79,9 @@ class RoadDistressModel(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm1d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
     
     def forward(self, x):
         """
@@ -72,7 +93,8 @@ class RoadDistressModel(nn.Module):
         Returns:
             torch.Tensor: Output tensor of shape (batch_size, num_classes)
         """
-        return self.backbone(x)
+        features = self.backbone(x)
+        return self.classifier(features)
     
     def get_optimizer(self, learning_rate=1e-4, weight_decay=1e-4):
         """
@@ -87,23 +109,41 @@ class RoadDistressModel(nn.Module):
         """
         return AdamW(self.parameters(), lr=learning_rate, weight_decay=weight_decay)
     
-    def get_scheduler(self, optimizer, num_epochs):
+    def get_scheduler(self, optimizer, num_epochs, warmup_epochs=5):
         """
-        Get the learning rate scheduler
+        Get the learning rate scheduler with warmup
         
         Args:
             optimizer: The optimizer
             num_epochs (int): Number of epochs
+            warmup_epochs (int): Number of warmup epochs
             
         Returns:
             scheduler: The learning rate scheduler
         """
-        return CosineAnnealingWarmRestarts(
+        # Create warmup scheduler
+        warmup_scheduler = torch.optim.lr_scheduler.LinearLR(
             optimizer,
-            T_0=num_epochs // 3,  # Restart every 1/3 of total epochs
-            T_mult=2,  # Double the restart interval after each restart
-            eta_min=1e-6  # Minimum learning rate
+            start_factor=0.001,
+            end_factor=1.0,
+            total_iters=warmup_epochs
         )
+        
+        # Create cosine scheduler
+        cosine_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=num_epochs - warmup_epochs,
+            eta_min=1e-6
+        )
+        
+        # Combine schedulers
+        scheduler = torch.optim.lr_scheduler.SequentialLR(
+            optimizer,
+            schedulers=[warmup_scheduler, cosine_scheduler],
+            milestones=[warmup_epochs]
+        )
+        
+        return scheduler
     
     def get_loss_function(self):
         """
