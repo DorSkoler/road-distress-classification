@@ -5,6 +5,11 @@ experiments/
 visualizations/
 data/
 visualization_results/
+preprocessing/annotations
+preprocessing/output
+checkpoints/
+test_predictions
+
 
 # Python
 __pycache__/
