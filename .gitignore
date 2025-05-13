@@ -5,11 +5,16 @@ experiments/
 visualizations/
 data/
 visualization_results/
-preprocessing/annotations
-preprocessing/output
+preprocessing/
 checkpoints/
 test_predictions
-
+road_dataset_pipeline/raw
+road_dataset_pipeline/tagged_json
+road_dataset_pipeline/filtered
+road_dataset_pipeline/filtered_masks
+road_dataset_pipeline/train
+road_dataset_pipeline/val
+road_dataset_pipeline/test
 
 # Python
 __pycache__/
