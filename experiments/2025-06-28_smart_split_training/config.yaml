@@ -1,0 +1,415 @@
+# Configuration for Smart Split Training Experiment
+# Date: 2025-06-28
+
+system:
+  random_seed: 42
+  num_workers: 8  # Increased back to 8 - CPU was underutilized
+  device: "cuda"
+  pin_memory: true
+
+dataset:
+  coryell_path: "../../data/coryell"
+  image_size: [256, 256]  # Reduced from 512x512 to 256x256 for 4x faster training
+  batch_size: 16  # Increased from 16 to 32 for better GPU utilization
+  num_classes: 3  # damaged, occlusion, cropped
+
+# Smart splitting configuration
+splitting:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  min_road_images: 5
+  balance_labels: true
+  preserve_road_integrity: true
+
+# Road mask generation configuration
+mask_generation:
+  model_checkpoint: "../../checkpoints/unet_resnet34_road_segmentation.pth"
+  confidence_threshold: 0.5
+  road_coverage_threshold: 0.3
+  min_road_pixels: 1000
+  save_visualizations: true
+
+# Augmentation configuration
+augmentation:
+  samples_per_image: 3  # Reduced from 4 to 3 for conservative approach
+  
+  # Conservative geometric augmentations
+  geometric:
+    rotation:
+      enabled: true
+      range: [-5, 5]  # Very small rotation
+      probability: 0.3
+    flip:
+      enabled: true
+      probability: 0.5
+    scale:
+      enabled: false  # Disabled to avoid distortion
+      range: [0.8, 1.2]
+      probability: 0.0
+    crop:
+      enabled: false  # Disabled to preserve full image
+      probability: 0.0
+  
+  # Conservative color augmentations
+  color:
+    brightness:
+      enabled: true
+      range: [-0.1, 0.1]  # Very small brightness change
+      probability: 0.5
+    contrast:
+      enabled: true
+      range: [-0.1, 0.1]  # Very small contrast change
+      probability: 0.5
+    saturation:
+      enabled: false  # Disabled to preserve realistic colors
+      range: [-0.3, 0.3]
+      probability: 0.0
+    hue:
+      enabled: false  # Disabled to preserve realistic colors
+      range: [-20, 20]
+      probability: 0.0
+  
+  # Minimal noise augmentations
+  noise:
+    gaussian:
+      enabled: true
+      std_range: [5, 15]  # Very light noise
+      probability: 0.3
+    salt_pepper:
+      enabled: false  # Disabled as too aggressive
+      noise_ratio: 0.02
+      probability: 0.0
+  
+  # Weather simulation (disabled - too aggressive)
+  weather:
+    rain:
+      enabled: false
+      probability: 0.0
+    fog:
+      enabled: false
+      density: [0.1, 0.3]
+      probability: 0.0
+    shadow:
+      enabled: false
+      probability: 0.0
+
+# Training configuration
+training:
+  epochs: 50  # Reduced from 100 for faster experimentation
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  scheduler: "cosine"
+  warmup_epochs: 3  # Reduced from 5
+  early_stopping:
+    enabled: true
+    patience: 10  # Reduced from 15 for faster stopping
+    min_delta: 0.001
+  mixed_precision: false  # Disabled to avoid potential slowdowns
+  optimizer: "adamw"
+  prefetch_factor: 4  # Increased from 2 for better data loading
+  
+  # Loss configuration
+  loss:
+    type: "bce"  # Changed from focal to bce for multi-label
+    alpha: 0.25
+    gamma: 2.0
+    class_weights: [1.0, 1.0, 1.0]  # damaged, occlusion, cropped
+  
+# Model configuration
+model:
+  architecture: "resnet50"
+  pretrained: true
+  num_classes: 3
+  dropout_rate: 0.5
+
+# Evaluation configuration
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1", "iou"]
+  save_predictions: true
+  confusion_matrix: true
+  class_names: ["damaged", "occlusion", "cropped"]
+
+# Logging and saving
+logging:
+  log_dir: "logs"
+  tensorboard: true
+  wandb: false
+  save_frequency: 5
+  checkpoint_dir: "checkpoints"
+  best_metric: "f1"
+
+# Smart Split Training Experiment Configuration
+# Date: 2025-06-28
+
+# Dataset Configuration
+dataset:
+  coryell_path: "../../data/coryell"  # Raw coryell data organized by roads
+  labels:
+    - "damaged"
+    - "occlusion" 
+    - "cropped"
+  
+  # Split ratios
+  split_ratios:
+    train: 0.7
+    val: 0.15
+    test: 0.15
+  
+  # Quality filtering
+  min_road_coverage: 0.15  # 15% minimum road coverage
+  max_road_coverage: 0.95  # 95% maximum road coverage
+
+# Road Mask Configuration
+road_masks:
+  model_path: "../../checkpoints/best_model.pth"
+  output_dir: "masks"
+  confidence_threshold: 0.5
+  mask_dilation: 2  # pixels to dilate mask
+  save_format: "png"
+  
+  # Quality validation
+  min_mask_quality: 0.8
+  visual_inspection_samples: 100
+
+# Smart Splitting Configuration
+smart_splitting:
+  # Road feature extraction
+  feature_extraction:
+    method: "histogram"  # histogram, texture, or combined
+    color_bins: 32
+    texture_window: 8
+    
+  # Clustering for road grouping
+  clustering:
+    method: "kmeans"  # kmeans, dbscan, or hierarchical
+    n_clusters: 50  # number of road groups
+    random_state: 42
+    
+  # Stratified sampling
+  stratification:
+    ensure_balance: true
+    tolerance: 0.1  # 10% tolerance for label balance
+    max_iterations: 100
+
+# Augmentation Configuration
+augmentation:
+  output_dir: "augmented"
+  samples_per_image: 4  # number of augmented versions per image
+  
+  # Geometric augmentations
+  geometric:
+    rotation:
+      enabled: true
+      range: [-15, 15]  # degrees
+      probability: 0.7
+    flip:
+      enabled: true
+      horizontal: true
+      vertical: false
+      probability: 0.5
+    scale:
+      enabled: true
+      range: [0.8, 1.2]
+      probability: 0.6
+    crop:
+      enabled: true
+      crop_ratio: [0.8, 0.95]
+      probability: 0.4
+      
+  # Color augmentations
+  color:
+    brightness:
+      enabled: true
+      range: [0.7, 1.3]
+      probability: 0.6
+    contrast:
+      enabled: true
+      range: [0.7, 1.3]
+      probability: 0.6
+    saturation:
+      enabled: true
+      range: [0.7, 1.3]
+      probability: 0.5
+    hue:
+      enabled: true
+      range: [-0.1, 0.1]
+      probability: 0.4
+      
+  # Noise augmentations
+  noise:
+    gaussian:
+      enabled: true
+      std_range: [0.01, 0.05]
+      probability: 0.3
+    salt_pepper:
+      enabled: true
+      noise_ratio: [0.001, 0.01]
+      probability: 0.2
+      
+  # Weather simulation
+  weather:
+    rain:
+      enabled: true
+      intensity: [0.1, 0.3]
+      probability: 0.2
+    fog:
+      enabled: true
+      density: [0.1, 0.2]
+      probability: 0.15
+    shadow:
+      enabled: true
+      intensity: [0.2, 0.4]
+      probability: 0.25
+
+# Model Configuration
+model:
+  # Architecture
+  architecture:
+    backbone: "efficientnet_b3"  # efficientnet_b3, resnet50, or custom
+    pretrained: true
+    freeze_backbone: false
+    
+  # Dual input configuration
+  dual_input:
+    enabled: true
+    mask_fusion: "attention"  # attention, concatenation, or weighted
+    mask_encoder: "simple"  # simple, unet, or resnet
+    
+  # Classification head
+  classification:
+    hidden_size: 512
+    dropout: 0.3
+    activation: "relu"
+    
+  # Loss function
+  loss:
+    type: "bce"  # bce, focal, or dice
+    focal_alpha: 0.25
+    focal_gamma: 2.0
+    label_smoothing: 0.1
+
+# Training Configuration
+training:
+  # General settings
+  batch_size: 32
+  num_epochs: 50
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  optimizer: "adamw"  # adam, adamw, or sgd
+  scheduler: "cosine"  # step, cosine, or plateau
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 10
+    min_delta: 0.001
+    
+  # Checkpointing
+  checkpointing:
+    save_best: true
+    save_last: true
+    save_frequency: 5
+    
+  # Mixed precision
+  mixed_precision: true
+  
+  # Device
+  device: "auto"  # auto, cuda, or cpu
+
+# Comparative Training Configuration
+comparative_training:
+  # Model variants to train
+  variants:
+    model_a:
+      name: "original_only"
+      use_masks: false
+      use_augmentation: false
+      description: "Original images only"
+      
+    model_b:
+      name: "with_masks"
+      use_masks: true
+      use_augmentation: false
+      description: "Original images + road masks"
+      
+    model_c:
+      name: "with_augmentation"
+      use_masks: false
+      use_augmentation: true
+      description: "Original + augmented images"
+      
+    model_d:
+      name: "full_pipeline"
+      use_masks: true
+      use_augmentation: true
+      description: "Original + augmented + masks"
+
+# Evaluation Configuration
+evaluation:
+  # Metrics to compute
+  metrics:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "confusion_matrix"
+    
+  # Per-label evaluation
+  per_label: true
+  
+  # Cross-validation
+  cross_validation:
+    enabled: false
+    folds: 5
+    
+  # Statistical significance
+  statistical_testing:
+    enabled: true
+    method: "wilcoxon"  # wilcoxon, ttest, or mannwhitney
+    alpha: 0.05
+
+# Output Configuration
+output:
+  # Results directory
+  results_dir: "results"
+  
+  # Logging
+  logging:
+    level: "INFO"
+    save_logs: true
+    tensorboard: true
+    
+  # Visualization
+  visualization:
+    save_plots: true
+    plot_format: "png"
+    dpi: 300
+    
+  # Model saving
+  model_saving:
+    save_format: "pth"  # pth, onnx, or torchscript
+    save_metadata: true
+    
+  # Reports
+  reports:
+    generate_summary: true
+    generate_comparison: true
+    save_predictions: true
+
+# System Configuration
+system:
+  # Random seeds
+  random_seed: 42
+  
+  # Number of workers
+  num_workers: 4
+  
+  # Memory management
+  pin_memory: true
+  
+  # Progress bars
+  show_progress: true
+  
+  # Debug mode
+  debug: false 

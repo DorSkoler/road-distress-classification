@@ -1,7 +1,17 @@
 # Data directories
 organized_dataset/
 raw_dataset/
-experiments/
+experiments/*.json
+experiments/2025-06-28_smart_split_training/augmented/
+experiments/2025-06-28_smart_split_training/masks/
+experiments/2025-06-28_smart_split_training/splits/
+experiments/2025-06-28_smart_split_training/splits_backup/
+*/models/
+
+# Ignore all experiment folders except the current one
+experiments/*
+!experiments/2025-06-28_smart_split_training/
+
 visualizations/
 data/
 visualization_results/
