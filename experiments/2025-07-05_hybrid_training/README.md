@@ -50,6 +50,9 @@ This experiment is designed to work on:
 - At least 8GB RAM
 - 10GB free disk space
 - Internet connection for package installation
+- **Road segmentation model**: `road-distress-classification/checkpoints/best_model.pth`
+  - Used for generating road masks
+  - Required for Model A, C, and D variants
 
 ### Windows Specific
 - NVIDIA GPU (optional but recommended)
@@ -150,6 +153,10 @@ Create `config/user_config.yaml` to override any settings:
 dataset:
   coryell_path: "/custom/path/to/coryell/data"
   
+# Override mask generation model path if needed
+mask_generation:
+  model_checkpoint: "/custom/path/to/road_segmentation_model.pth"
+  
 # Override hardware settings
 hardware:
   device: "cpu"  # Force CPU usage
@@ -177,10 +184,18 @@ This will create road-wise splits in `data/splits/`:
 
 ### Step 2: Generate Road Masks (if needed)
 
+**Note**: Requires the road segmentation model at `../../checkpoints/best_model.pth`
+
 ```bash
 # Generate road masks for all images
 python src/data/mask_generator.py
 ```
+
+The mask generator will:
+- Load the pre-trained road segmentation model
+- Process all images to generate road masks
+- Filter images with insufficient road coverage (<15%)
+- Save masks for training Model A, C, and D variants
 
 ### Step 3: Create Augmented Data (if needed)
 

@@ -52,9 +52,9 @@ dataset:
 # Smart Splitting Configuration (from successful 28/06 experiment)
 splitting:
   method: "smart_split"
-  train_ratio: 0.7
-  val_ratio: 0.15
-  test_ratio: 0.15
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
   preserve_road_integrity: true  # Key success factor from 28/06
   balance_labels: true
   min_road_images: 5
@@ -142,7 +142,7 @@ augmentation:
 
 # Road Mask Configuration (from 28/06 experiment)
 mask_generation:
-  model_checkpoint: "../../checkpoints/unet_resnet34_road_segmentation.pth"
+  model_checkpoint: "../../checkpoints/best_model.pth"
   confidence_threshold: 0.5
   road_coverage_threshold: 0.3
   min_road_pixels: 1000

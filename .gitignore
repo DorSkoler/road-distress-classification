@@ -12,9 +12,10 @@ experiments/2025-06-28_smart_split_training/splits_backup/
 experiments/*
 !experiments/2025-06-28_smart_split_training/
 !experiments/2025-07-05_hybrid_training/
+!experiments/2025-07-05_hybrid_training/src/data/
 
 visualizations/
-data/
+/data/
 visualization_results/
 preprocessing/
 checkpoints/

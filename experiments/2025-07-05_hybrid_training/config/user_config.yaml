@@ -1,0 +1,18 @@
+# User-specific configuration for windows
+# Copy from base_config.yaml and modify as needed
+
+# Override platform detection if needed
+platform:
+  os: "windows"
+
+# Override paths if needed
+dataset:
+  coryell_path: "../../data/coryell"  # Adjust if your data is elsewhere
+
+# Override hardware settings if needed
+hardware:
+  device: "auto"  # Will auto-detect best device
+  
+# Override number of workers based on your system
+dataset:
+  num_workers: null  # Will auto-detect optimal number

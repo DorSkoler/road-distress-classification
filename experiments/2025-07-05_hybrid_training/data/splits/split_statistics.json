@@ -1,0 +1,41 @@
+{
+  "train": {
+    "total_images": 10901,
+    "label_counts": {
+      "damaged": 4172,
+      "occlusion": 2045,
+      "cropped": 447
+    },
+    "label_percentages": {
+      "damaged": 0.38271718190991655,
+      "occlusion": 0.18759746812219064,
+      "cropped": 0.041005412347491055
+    }
+  },
+  "val": {
+    "total_images": 3640,
+    "label_counts": {
+      "damaged": 903,
+      "occlusion": 846,
+      "cropped": 171
+    },
+    "label_percentages": {
+      "damaged": 0.24807692307692308,
+      "occlusion": 0.23241758241758242,
+      "cropped": 0.04697802197802198
+    }
+  },
+  "test": {
+    "total_images": 3632,
+    "label_counts": {
+      "damaged": 896,
+      "occlusion": 585,
+      "cropped": 160
+    },
+    "label_percentages": {
+      "damaged": 0.24669603524229075,
+      "occlusion": 0.16106828193832598,
+      "cropped": 0.04405286343612335
+    }
+  }
+}
