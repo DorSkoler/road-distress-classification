@@ -1,0 +1,251 @@
+# Base Configuration for 2025-07-05 Hybrid Training Experiment
+# Combines successful approaches from 2025-05-10 and 2025-06-28
+# Cross-platform compatible for Mac and Windows
+
+experiment:
+  name: "hybrid_training_2025_07_05"
+  description: "Hybrid experiment combining successful data splitting from 28/06 with proven architecture from 10/05"
+  version: "1.0"
+  date: "2025-07-05"
+
+# Platform Configuration
+platform:
+  # Auto-detect platform or specify: "windows", "mac", "linux"
+  os: "auto"
+  
+  # Platform-specific settings
+  windows:
+    path_separator: "\\"
+    line_ending: "\r\n"
+    default_device: "cuda"
+    default_workers: 8
+    shell_command: "powershell"
+    
+  mac:
+    path_separator: "/"
+    line_ending: "\n"
+    default_device: "mps"  # Apple Silicon GPU
+    default_workers: 6
+    shell_command: "bash"
+    
+  linux:
+    path_separator: "/"
+    line_ending: "\n"
+    default_device: "cuda"
+    default_workers: 8
+    shell_command: "bash"
+
+# Dataset Configuration
+dataset:
+  # Use forward slashes - will be converted to platform-appropriate paths
+  coryell_path: "../../data/coryell"  # Path to raw coryell data
+  image_size: [256, 256]  # Same as successful 10/05 experiment
+  batch_size: 64  # Same as successful 10/05 experiment
+  num_workers: null  # Will be set based on platform
+  pin_memory: true
+  num_classes: 3  # damaged, occlusion, cropped
+  
+  # File extensions to search for
+  image_extensions: [".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"]
+  annotation_extensions: [".json", ".JSON"]
+
+# Smart Splitting Configuration (from successful 28/06 experiment)
+splitting:
+  method: "smart_split"
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  preserve_road_integrity: true  # Key success factor from 28/06
+  balance_labels: true
+  min_road_images: 5
+
+# Model Configuration (from successful 10/05 experiment)
+model:
+  architecture: "unet_efficientnet_b3"  # Successful architecture from 10/05
+  backbone: "efficientnet-b3"
+  encoder_weights: "imagenet"
+  num_classes: 3
+  activation: null  # No activation (raw logits)
+  
+  # Classification head configuration
+  classifier:
+    hidden_size: 128
+    dropout: 0.5
+    
+  # Mask integration settings
+  mask_integration:
+    full_masking_weight: 1.0      # For Models A & C
+    weighted_masking_weight: 0.5  # For Model D
+    no_masking_weight: 0.0        # For Model B
+
+# Training Configuration (from successful 10/05 experiment)
+training:
+  num_epochs: 50
+  learning_rate: 1e-3  # Same as successful 10/05
+  weight_decay: 0.02
+  optimizer: "AdamW"
+  scheduler: "OneCycleLR"
+  warmup_pct: 0.3
+  gradient_clip: 1.0
+  mixed_precision: true
+  early_stopping_patience: 10
+  
+  # Loss configuration
+  loss:
+    type: "cross_entropy"  # Same as successful 10/05
+    label_smoothing: 0.0
+    class_weights: null  # Will be calculated from data
+
+# Augmentation Configuration (conservative approach from 28/06)
+augmentation:
+  enabled: true
+  samples_per_image: 3  # Conservative number
+  output_dir: "data/augmented"
+  
+  # Geometric augmentations (very conservative)
+  geometric:
+    rotation:
+      enabled: true
+      range: [-5, 5]  # Very small rotation
+      probability: 0.3
+    flip:
+      enabled: true
+      probability: 0.5
+    scale:
+      enabled: false  # Disabled to avoid distortion
+    crop:
+      enabled: false  # Disabled to preserve full image
+  
+  # Color augmentations (very conservative)
+  color:
+    brightness:
+      enabled: true
+      range: [-0.1, 0.1]  # Very small brightness change
+      probability: 0.5
+    contrast:
+      enabled: true
+      range: [-0.1, 0.1]  # Very small contrast change
+      probability: 0.5
+    saturation:
+      enabled: false  # Disabled to preserve realistic colors
+    hue:
+      enabled: false  # Disabled to preserve realistic colors
+  
+  # Noise augmentations (minimal)
+  noise:
+    gaussian:
+      enabled: true
+      std_range: [5, 15]  # Very light noise
+      probability: 0.3
+    salt_pepper:
+      enabled: false  # Disabled as too aggressive
+
+# Road Mask Configuration (from 28/06 experiment)
+mask_generation:
+  model_checkpoint: "../../checkpoints/unet_resnet34_road_segmentation.pth"
+  confidence_threshold: 0.5
+  road_coverage_threshold: 0.3
+  min_road_pixels: 1000
+  output_dir: "data/masks"
+  save_visualizations: true
+  
+  # Mask processing
+  dilation_kernel: 2
+  erosion_kernel: 1
+  blur_kernel: 3
+
+# Hardware Configuration
+hardware:
+  device: "auto"  # Will auto-detect best device (cuda/mps/cpu)
+  cudnn_benchmark: true
+  prefetch_factor: 2
+  
+  # Platform-specific device preferences
+  device_preferences:
+    windows: ["cuda", "cpu"]
+    mac: ["mps", "cpu"]  # Apple Silicon GPU support
+    linux: ["cuda", "cpu"]
+  
+  # Memory settings
+  memory:
+    max_memory_fraction: 0.8  # Use max 80% of available GPU memory
+    allow_growth: true
+    
+# Logging Configuration
+logging:
+  log_dir: "logs"
+  tensorboard: true
+  save_frequency: 5
+  checkpoint_dir: "checkpoints"
+  best_metric: "val_accuracy"
+  
+  # Cross-platform log format
+  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+  
+  # Metrics to track
+  metrics:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1"
+    - "loss"
+
+# Evaluation Configuration
+evaluation:
+  test_batch_size: 32
+  save_predictions: true
+  save_visualizations: true
+  confusion_matrix: true
+  
+  # Class names for visualization
+  class_names:
+    - "not_damaged"
+    - "damaged"
+    - "other_issues"
+
+# Model Variants Configuration
+variants:
+  model_a:
+    name: "pictures_plus_masks"
+    description: "Original images + road masks (full masking)"
+    use_masks: true
+    use_augmentation: false
+    mask_weight: 1.0
+    
+  model_b:
+    name: "pictures_plus_augmentation"
+    description: "Original + augmented images (no masks)"
+    use_masks: false
+    use_augmentation: true
+    mask_weight: 0.0
+    
+  model_c:
+    name: "pictures_plus_augmentation_plus_masks"
+    description: "Original + augmented images + masks (full masking)"
+    use_masks: true
+    use_augmentation: true
+    mask_weight: 1.0
+    
+  model_d:
+    name: "pictures_plus_augmentation_plus_weighted_masks"
+    description: "Original + augmented images + weighted masks (50% weight to non-road)"
+    use_masks: true
+    use_augmentation: true
+    mask_weight: 0.5
+
+# System Configuration
+system:
+  random_seed: 42
+  reproducible: true
+  benchmark: true
+  
+  # Cross-platform compatibility
+  encoding: "utf-8"
+  file_permissions: 0o755  # Unix-style permissions (ignored on Windows)
+  
+  # Environment variables
+  env_vars:
+    PYTORCH_CUDA_ALLOC_CONF: "max_split_size_mb:512"
+    OMP_NUM_THREADS: "1"
+    MKL_NUM_THREADS: "1" 

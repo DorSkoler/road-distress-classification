@@ -11,6 +11,7 @@ experiments/2025-06-28_smart_split_training/splits_backup/
 # Ignore all experiment folders except the current one
 experiments/*
 !experiments/2025-06-28_smart_split_training/
+!experiments/2025-07-05_hybrid_training/
 
 visualizations/
 data/
