@@ -260,13 +260,15 @@ class RoadDistressDataset(torch.utils.data.Dataset):
                  mask_paths: Optional[list] = None,
                  transform=None,
                  mask_transform=None,
-                 use_masks: bool = True):
+                 use_masks: bool = True,
+                 image_size: Tuple[int, int] = (256, 256)):
         self.image_paths = image_paths
         self.labels = labels
         self.mask_paths = mask_paths
         self.transform = transform
         self.mask_transform = mask_transform
         self.use_masks = use_masks
+        self.image_size = image_size
         
         # Validate inputs
         if self.use_masks and self.mask_paths is None:
@@ -317,8 +319,7 @@ class RoadDistressDataset(torch.utils.data.Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         # Resize image to target size
-        target_size = (512, 512)  # Default size, can be made configurable
-        image = cv2.resize(image, target_size, interpolation=cv2.INTER_LINEAR)
+        image = cv2.resize(image, self.image_size, interpolation=cv2.INTER_LINEAR)
         
         image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
         return image
@@ -333,8 +334,7 @@ class RoadDistressDataset(torch.utils.data.Dataset):
             raise ValueError(f"Could not load mask: {path}")
         
         # Resize mask to target size
-        target_size = (512, 512)  # Default size, can be made configurable
-        mask = cv2.resize(mask, target_size, interpolation=cv2.INTER_NEAREST)
+        mask = cv2.resize(mask, self.image_size, interpolation=cv2.INTER_NEAREST)
         
         mask = torch.from_numpy(mask).unsqueeze(0).float() / 255.0
         return mask

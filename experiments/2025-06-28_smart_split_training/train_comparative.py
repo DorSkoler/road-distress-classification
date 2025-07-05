@@ -294,26 +294,33 @@ class RoadDistressTrainer:
                 val_masks = construct_augmented_mask_paths(val_masks, 'val')
                 test_masks = construct_augmented_mask_paths(test_masks, 'test')
         
+        # Get image size from config
+        image_size = self.config.get('dataset', {}).get('image_size', [256, 256])
+        image_size_tuple = tuple(image_size)
+        
         # Create datasets
         train_dataset = RoadDistressDataset(
             image_paths=train_images,
             labels=train_labels,
             mask_paths=train_masks,
-            use_masks=self.variant_config['use_masks']
+            use_masks=self.variant_config['use_masks'],
+            image_size=image_size_tuple
         )
         
         val_dataset = RoadDistressDataset(
             image_paths=val_images,
             labels=val_labels,
             mask_paths=val_masks,
-            use_masks=self.variant_config['use_masks']
+            use_masks=self.variant_config['use_masks'],
+            image_size=image_size_tuple
         )
         
         test_dataset = RoadDistressDataset(
             image_paths=test_images,
             labels=test_labels,
             mask_paths=test_masks,
-            use_masks=self.variant_config['use_masks']
+            use_masks=self.variant_config['use_masks'],
+            image_size=image_size_tuple
         )
         
         # Create data loaders
@@ -434,8 +441,24 @@ class RoadDistressTrainer:
         all_predictions = []
         all_targets = []
         
+        # Timing variables
+        batch_times = []
+        data_load_times = []
+        forward_times = []
+        backward_times = []
+        
+        epoch_start = time.time()
+        data_start = time.time()
+        
         for batch_idx, batch in enumerate(self.train_loader):
+            # Record data loading time
+            data_load_time = time.time() - data_start
+            data_load_times.append(data_load_time)
+            
+            batch_start = time.time()
+            
             # Move data to device
+            data_to_device_start = time.time()
             if self.variant_config['use_masks']:
                 images, masks, targets = batch
                 images, masks, targets = images.to(self.device), masks.to(self.device), targets.to(self.device)
@@ -443,21 +466,30 @@ class RoadDistressTrainer:
                 images, targets = batch
                 images, targets = images.to(self.device), targets.to(self.device)
                 masks = None
+            data_to_device_time = time.time() - data_to_device_start
             
             # Forward pass
+            forward_start = time.time()
             self.optimizer.zero_grad()
             outputs = self.model(images, masks)
             loss = self.criterion(outputs, targets.float())  # BCEWithLogitsLoss expects float targets
+            forward_time = time.time() - forward_start
+            forward_times.append(forward_time)
             
             # Backward pass
+            backward_start = time.time()
             loss.backward()
             self.optimizer.step()
+            backward_time = time.time() - backward_start
+            backward_times.append(backward_time)
             
             # Statistics
+            stats_start = time.time()
             total_loss += loss.item()
             # Multi-label predictions: apply sigmoid and threshold at 0.5
             probabilities = torch.sigmoid(outputs)
             predictions = (probabilities > 0.5).float()
+            stats_time = time.time() - stats_start
             
             # Debug model outputs on first batch of first epoch
             if batch_idx == 0 and self.current_epoch == 0:
@@ -467,12 +499,22 @@ class RoadDistressTrainer:
                 print(f"    Debug - Probabilities (first 3): {probabilities[:3].detach().cpu()}")
                 print(f"    Debug - Predictions (first 3): {predictions[:3].cpu()}")
             
+            # Move to CPU and collect
+            cpu_transfer_start = time.time()
             all_predictions.extend(predictions.cpu().numpy())
             all_targets.extend(targets.cpu().numpy())
+            cpu_transfer_time = time.time() - cpu_transfer_start
             
-            # Log progress
-            if batch_idx % 10 == 0:
+            # Record total batch time
+            batch_time = time.time() - batch_start
+            batch_times.append(batch_time)
+            
+            # Log progress (simplified)
+            if batch_idx % 50 == 0:  # Reduced frequency from every 10 to every 50 batches
                 print(f"  Batch {batch_idx}/{len(self.train_loader)}, Loss: {loss.item():.4f}")
+            
+            # Start timing for next data load
+            data_start = time.time()
         
         # Calculate multi-label metrics
         all_targets = np.array(all_targets, dtype=np.float32)
@@ -499,12 +541,34 @@ class RoadDistressTrainer:
         )
         accuracy = exact_match_accuracy
         
+        # Calculate epoch timing statistics
+        epoch_time = time.time() - epoch_start
+        avg_batch_time = np.mean(batch_times)
+        avg_data_time = np.mean(data_load_times)
+        avg_forward_time = np.mean(forward_times)
+        avg_backward_time = np.mean(backward_times)
+        
+        # Log epoch timing summary
+        print(f"  Epoch Timing Summary:")
+        print(f"    Total epoch time: {epoch_time:.1f}s ({epoch_time/60:.1f}min)")
+        print(f"    Average per batch: {avg_batch_time*1000:.1f}ms")
+        print(f"    - Data loading: {avg_data_time*1000:.1f}ms ({avg_data_time/avg_batch_time*100:.1f}%)")
+        print(f"    - Forward pass: {avg_forward_time*1000:.1f}ms ({avg_forward_time/avg_batch_time*100:.1f}%)")
+        print(f"    - Backward pass: {avg_backward_time*1000:.1f}ms ({avg_backward_time/avg_batch_time*100:.1f}%)")
+        print(f"    Batches per second: {len(self.train_loader)/epoch_time:.2f}")
+        
         metrics = {
             'loss': total_loss / len(self.train_loader),
             'accuracy': accuracy,
             'precision': precision,
             'recall': recall,
-            'f1': f1
+            'f1': f1,
+            # Add timing metrics
+            'epoch_time': epoch_time,
+            'avg_batch_time': avg_batch_time,
+            'avg_data_time': avg_data_time,
+            'avg_forward_time': avg_forward_time,
+            'avg_backward_time': avg_backward_time
         }
         
         return metrics
@@ -1001,8 +1065,8 @@ def main():
     parser = argparse.ArgumentParser(description='Train road distress classification models')
     parser.add_argument('--stop-current', action='store_true', 
                        help='Stop current model training and test best model')
-    parser.add_argument('--variant', type=str, default=None,
-                       help='Specific variant to train (model_a, model_b, model_c, model_d)')
+    parser.add_argument('--variant', type=str, nargs='+', default=None,
+                       help='Specific variants to train (model_a, model_b, model_c, model_d). Can specify multiple.')
     args = parser.parse_args()
     
     # Load configuration
@@ -1015,7 +1079,7 @@ def main():
     
     # Determine which variants to train
     if args.variant:
-        variants = [args.variant]
+        variants = args.variant  # Now accepts list of variants
     else:
         variants = ['model_a', 'model_b', 'model_c', 'model_d']
     

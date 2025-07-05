@@ -3,14 +3,14 @@
 
 system:
   random_seed: 42
-  num_workers: 8  # Increased back to 8 - CPU was underutilized
+  num_workers: 6  # Optimized for faster batch processing
   device: "cuda"
   pin_memory: true
 
 dataset:
   coryell_path: "../../data/coryell"
   image_size: [256, 256]  # Reduced from 512x512 to 256x256 for 4x faster training
-  batch_size: 16  # Increased from 16 to 32 for better GPU utilization
+  batch_size: 256  # Increased to 256 since GPU memory usage is very low (0.2GB/7.3GB)
   num_classes: 3  # damaged, occlusion, cropped
 
 # Smart splitting configuration
@@ -97,7 +97,7 @@ augmentation:
 # Training configuration
 training:
   epochs: 50  # Reduced from 100 for faster experimentation
-  learning_rate: 0.001
+  learning_rate: 0.0008  # Reduced slightly for larger batch size (256)
   weight_decay: 0.0001
   scheduler: "cosine"
   warmup_epochs: 3  # Reduced from 5
@@ -105,16 +105,16 @@ training:
     enabled: true
     patience: 10  # Reduced from 15 for faster stopping
     min_delta: 0.001
-  mixed_precision: false  # Disabled to avoid potential slowdowns
+  mixed_precision: true  # Enable for 2x speedup with backward pass
   optimizer: "adamw"
   prefetch_factor: 4  # Increased from 2 for better data loading
   
   # Loss configuration
   loss:
-    type: "bce"  # Changed from focal to bce for multi-label
+    type: "bce"  # BCEWithLogitsLoss for multi-label
     alpha: 0.25
     gamma: 2.0
-    class_weights: [1.0, 1.0, 1.0]  # damaged, occlusion, cropped
+    class_weights: [1.0, 1.7, 7.7]  # damaged, occlusion, cropped (inverse frequency weighting)
   
 # Model configuration
 model:

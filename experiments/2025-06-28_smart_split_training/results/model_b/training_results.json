@@ -1,0 +1,329 @@
+{
+  "variant_name": "model_b",
+  "description": "Original images + road masks",
+  "training_time": 1816.622406721115,
+  "best_metric": 0.6043966496941794,
+  "test_metrics": {
+    "loss": 0.46450455141694924,
+    "accuracy": 0.3626410086264101,
+    "precision": 0.5645512108822291,
+    "recall": 0.569807846923376,
+    "f1": 0.5667253541982417,
+    "per_class": {
+      "damaged": {
+        "precision": 0.2845349477160154,
+        "recall": 0.6594387755102041,
+        "f1": 0.39753940792003073
+      },
+      "occluded": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "cropped": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    }
+  },
+  "config": {
+    "system": {
+      "random_seed": 42,
+      "num_workers": 4,
+      "pin_memory": true,
+      "show_progress": true,
+      "debug": false
+    },
+    "dataset": {
+      "coryell_path": "../../data/coryell",
+      "labels": [
+        "damaged",
+        "occlusion",
+        "cropped"
+      ],
+      "split_ratios": {
+        "train": 0.7,
+        "val": 0.15,
+        "test": 0.15
+      },
+      "min_road_coverage": 0.15,
+      "max_road_coverage": 0.95
+    },
+    "splitting": {
+      "train_ratio": 0.7,
+      "val_ratio": 0.15,
+      "test_ratio": 0.15,
+      "min_road_images": 5,
+      "balance_labels": true,
+      "preserve_road_integrity": true
+    },
+    "mask_generation": {
+      "model_checkpoint": "../../checkpoints/unet_resnet34_road_segmentation.pth",
+      "confidence_threshold": 0.5,
+      "road_coverage_threshold": 0.3,
+      "min_road_pixels": 1000,
+      "save_visualizations": true
+    },
+    "augmentation": {
+      "output_dir": "augmented",
+      "samples_per_image": 4,
+      "geometric": {
+        "rotation": {
+          "enabled": true,
+          "range": [
+            -15,
+            15
+          ],
+          "probability": 0.7
+        },
+        "flip": {
+          "enabled": true,
+          "horizontal": true,
+          "vertical": false,
+          "probability": 0.5
+        },
+        "scale": {
+          "enabled": true,
+          "range": [
+            0.8,
+            1.2
+          ],
+          "probability": 0.6
+        },
+        "crop": {
+          "enabled": true,
+          "crop_ratio": [
+            0.8,
+            0.95
+          ],
+          "probability": 0.4
+        }
+      },
+      "color": {
+        "brightness": {
+          "enabled": true,
+          "range": [
+            0.7,
+            1.3
+          ],
+          "probability": 0.6
+        },
+        "contrast": {
+          "enabled": true,
+          "range": [
+            0.7,
+            1.3
+          ],
+          "probability": 0.6
+        },
+        "saturation": {
+          "enabled": true,
+          "range": [
+            0.7,
+            1.3
+          ],
+          "probability": 0.5
+        },
+        "hue": {
+          "enabled": true,
+          "range": [
+            -0.1,
+            0.1
+          ],
+          "probability": 0.4
+        }
+      },
+      "noise": {
+        "gaussian": {
+          "enabled": true,
+          "std_range": [
+            0.01,
+            0.05
+          ],
+          "probability": 0.3
+        },
+        "salt_pepper": {
+          "enabled": true,
+          "noise_ratio": [
+            0.001,
+            0.01
+          ],
+          "probability": 0.2
+        }
+      },
+      "weather": {
+        "rain": {
+          "enabled": true,
+          "intensity": [
+            0.1,
+            0.3
+          ],
+          "probability": 0.2
+        },
+        "fog": {
+          "enabled": true,
+          "density": [
+            0.1,
+            0.2
+          ],
+          "probability": 0.15
+        },
+        "shadow": {
+          "enabled": true,
+          "intensity": [
+            0.2,
+            0.4
+          ],
+          "probability": 0.25
+        }
+      }
+    },
+    "training": {
+      "batch_size": 32,
+      "num_epochs": 50,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "optimizer": "adamw",
+      "scheduler": "cosine",
+      "early_stopping": {
+        "enabled": true,
+        "patience": 10,
+        "min_delta": 0.001
+      },
+      "checkpointing": {
+        "save_best": true,
+        "save_last": true,
+        "save_frequency": 5
+      },
+      "mixed_precision": true,
+      "device": "auto"
+    },
+    "model": {
+      "architecture": {
+        "backbone": "efficientnet_b3",
+        "pretrained": true,
+        "freeze_backbone": false
+      },
+      "dual_input": {
+        "enabled": true,
+        "mask_fusion": "attention",
+        "mask_encoder": "simple"
+      },
+      "classification": {
+        "hidden_size": 512,
+        "dropout": 0.3,
+        "activation": "relu"
+      },
+      "loss": {
+        "type": "bce",
+        "focal_alpha": 0.25,
+        "focal_gamma": 2.0,
+        "label_smoothing": 0.1
+      }
+    },
+    "evaluation": {
+      "metrics": [
+        "accuracy",
+        "precision",
+        "recall",
+        "f1_score",
+        "confusion_matrix"
+      ],
+      "per_label": true,
+      "cross_validation": {
+        "enabled": false,
+        "folds": 5
+      },
+      "statistical_testing": {
+        "enabled": true,
+        "method": "wilcoxon",
+        "alpha": 0.05
+      }
+    },
+    "logging": {
+      "log_dir": "logs",
+      "tensorboard": true,
+      "wandb": false,
+      "save_frequency": 5,
+      "checkpoint_dir": "checkpoints",
+      "best_metric": "f1"
+    },
+    "road_masks": {
+      "model_path": "../../checkpoints/best_model.pth",
+      "output_dir": "masks",
+      "confidence_threshold": 0.5,
+      "mask_dilation": 2,
+      "save_format": "png",
+      "min_mask_quality": 0.8,
+      "visual_inspection_samples": 100
+    },
+    "smart_splitting": {
+      "feature_extraction": {
+        "method": "histogram",
+        "color_bins": 32,
+        "texture_window": 8
+      },
+      "clustering": {
+        "method": "kmeans",
+        "n_clusters": 50,
+        "random_state": 42
+      },
+      "stratification": {
+        "ensure_balance": true,
+        "tolerance": 0.1,
+        "max_iterations": 100
+      }
+    },
+    "comparative_training": {
+      "variants": {
+        "model_a": {
+          "name": "original_only",
+          "use_masks": false,
+          "use_augmentation": false,
+          "description": "Original images only"
+        },
+        "model_b": {
+          "name": "with_masks",
+          "use_masks": true,
+          "use_augmentation": false,
+          "description": "Original images + road masks"
+        },
+        "model_c": {
+          "name": "with_augmentation",
+          "use_masks": false,
+          "use_augmentation": true,
+          "description": "Original + augmented images"
+        },
+        "model_d": {
+          "name": "full_pipeline",
+          "use_masks": true,
+          "use_augmentation": true,
+          "description": "Original + augmented + masks"
+        }
+      }
+    },
+    "output": {
+      "results_dir": "results",
+      "logging": {
+        "level": "INFO",
+        "save_logs": true,
+        "tensorboard": true
+      },
+      "visualization": {
+        "save_plots": true,
+        "plot_format": "png",
+        "dpi": 300
+      },
+      "model_saving": {
+        "save_format": "pth",
+        "save_metadata": true
+      },
+      "reports": {
+        "generate_summary": true,
+        "generate_comparison": true,
+        "save_predictions": true
+      }
+    }
+  }
+}
