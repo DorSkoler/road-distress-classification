@@ -14,6 +14,8 @@ experiments/*
 !experiments/2025-07-05_hybrid_training/
 !experiments/2025-07-05_hybrid_training/src/data/
 
+experiments/2025-07-05_hybrid_training/data/
+experiments/2025-07-05_hybrid_training/data/*.png
 visualizations/
 /data/
 visualization_results/

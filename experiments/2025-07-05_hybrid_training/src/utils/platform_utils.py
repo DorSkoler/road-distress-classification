@@ -125,7 +125,11 @@ class PlatformManager:
         
         # Get platform-specific default
         platform_config = self.get_platform_config()
-        default_workers = platform_config.get('default_workers', 4)
+        default_workers = platform_config.get('default_workers')
+        
+        if default_workers is None:
+            raise ValueError(f"No default_workers found for platform '{self.platform_info['os']}' in config. "
+                           f"Available platform configs: {list(self.config.get('platform', {}).keys())}")
         
         # Adjust based on CPU count
         cpu_count = os.cpu_count() or 4
@@ -229,6 +233,27 @@ class PlatformManager:
         """
         platform_config = self.get_platform_config()
         return platform_config.get('line_ending', '\n')
+    
+    def get_data_path(self, data_type: str) -> Path:
+        """Get path to data directory for the specified type.
+        
+        Args:
+            data_type: Type of data directory ('splits', 'masks', 'augmented')
+            
+        Returns:
+            Path to the data directory
+        """
+        # Base data directory (relative to experiment root)
+        base_data_dir = Path("data")
+        
+        # Create full path for the data type
+        data_path = base_data_dir / data_type
+        
+        # Normalize and ensure directory exists
+        normalized_path = self.normalize_path(data_path)
+        self.create_directory(normalized_path, parents=True, exist_ok=True)
+        
+        return normalized_path
     
     def save_text_file(self, content: str, path: Union[str, Path], encoding: str = 'utf-8'):
         """Save text file with platform-appropriate line endings.

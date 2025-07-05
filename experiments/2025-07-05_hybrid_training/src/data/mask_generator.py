@@ -613,7 +613,7 @@ class HybridMaskGenerator:
     def run(self):
         """Run the complete road mask generation pipeline."""
         logger.info("Starting cross-platform road mask generation pipeline...")
-        logger.info(f"Platform: {self.platform_utils.get_platform()}")
+        logger.info(f"Platform: {self.platform_utils.platform_info['os']}")
         logger.info(f"Device: {self.device}")
         
         # Process all splits

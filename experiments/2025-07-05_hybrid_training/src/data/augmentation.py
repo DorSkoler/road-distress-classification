@@ -31,7 +31,7 @@ import random
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
-from utils.platform_utils import PlatformUtils, get_platform_config
+from utils.platform_utils import PlatformManager, get_platform_manager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -46,8 +46,8 @@ class HybridAugmentationPipeline:
         Args:
             config_path: Path to configuration file
         """
-        self.platform_utils = PlatformUtils()
         self.config = self._load_config(config_path)
+        self.platform_utils = PlatformManager(self.config)
         self.setup_paths()
         self.setup_random_seed()
         self.create_augmentation_transforms()
@@ -62,8 +62,7 @@ class HybridAugmentationPipeline:
             config = yaml.safe_load(f)
         
         # Apply platform-specific configurations
-        platform_config = get_platform_config()
-        config = self.platform_utils.merge_configs(config, platform_config)
+        # Configuration is loaded as-is, platform manager will handle platform-specific logic
         
         logger.info(f"Loaded configuration from {config_path}")
         return config
@@ -75,9 +74,9 @@ class HybridAugmentationPipeline:
         self.coryell_root = Path(coryell_path).resolve()
         
         # Use platform-specific path handling
-        self.splits_dir = self.platform_utils.get_data_path("splits")
-        self.masks_dir = self.platform_utils.get_data_path("masks")
-        self.augmented_dir = self.platform_utils.get_data_path("augmented")
+        self.splits_dir = Path("data/splits").resolve()
+        self.masks_dir = Path("data/masks").resolve()
+        self.augmented_dir = Path("data/augmented").resolve()
         
         # Create directories with proper permissions
         self.platform_utils.create_directory(self.augmented_dir)
@@ -143,6 +142,7 @@ class HybridAugmentationPipeline:
             noise_transform = A.Compose([
                 A.GaussNoise(
                     var_limit=(5.0, 15.0),
+                    mean=0,
                     p=aug_config.get('noise', {}).get('probability', 0.3)
                 ),
             ])
@@ -152,7 +152,7 @@ class HybridAugmentationPipeline:
         combined_transform = A.Compose([
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(brightness_limit=0.05, contrast_limit=0.05, p=0.4),
-            A.GaussNoise(var_limit=(3.0, 10.0), p=0.2),
+            A.GaussNoise(var_limit=(3.0, 10.0), mean=0, p=0.2),
             A.Rotate(limit=3, p=0.3),
         ])
         self.augmentation_strategies.append(("combined", combined_transform))
@@ -553,7 +553,7 @@ class HybridAugmentationPipeline:
             target_variants: List of model variants that need augmentation
         """
         logger.info("Starting cross-platform augmentation pipeline...")
-        logger.info(f"Platform: {self.platform_utils.get_platform()}")
+        logger.info(f"Platform: {self.platform_utils.platform_info['os']}")
         
         if target_variants is None:
             target_variants = ['model_b', 'model_c', 'model_d']

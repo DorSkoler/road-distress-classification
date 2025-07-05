@@ -27,7 +27,7 @@ import random
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
-from utils.platform_utils import PlatformUtils
+from utils.platform_utils import PlatformManager
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class HybridRoadDataset(Dataset):
         self.config = config
         self.variant = variant
         self.transform = transform
-        self.platform_utils = PlatformUtils()
+        self.platform_utils = PlatformManager({})
         
         # Setup paths
         self.setup_paths()
@@ -276,13 +276,13 @@ class HybridRoadDataset(Dataset):
                 mask_path = self.masks_dir / self.split_name / road_name / f"{image_name}.png"
             
             if not mask_path.exists():
-                logger.warning(f"Mask not found: {mask_path}")
+                logger.debug(f"Mask not found: {mask_path}")
                 return None
             
             # Load mask
             mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
             if mask is None:
-                logger.warning(f"Failed to load mask: {mask_path}")
+                logger.debug(f"Failed to load mask: {mask_path}")
                 return None
             
             return mask
@@ -297,8 +297,8 @@ class HybridRoadDataset(Dataset):
             image_id = sample['image_id']
             road_name, image_name = image_id.split('/', 1)
             
-            # Labels are always from the original image
-            label_path = self.coryell_root / road_name / "img" / f"{image_name}.png.json"
+            # Labels are always from the original image (stored in ann directory)
+            label_path = self.coryell_root / road_name / "ann" / f"{image_name}.json"
             
             if not label_path.exists():
                 logger.warning(f"Label file not found: {label_path}")

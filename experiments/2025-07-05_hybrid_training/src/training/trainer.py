@@ -12,11 +12,27 @@ This module implements a comprehensive training pipeline for individual model va
 Adapted from successful architectures with modern training practices.
 """
 
+# Suppress all warnings FIRST before any imports
 import os
+import warnings
+import logging
+warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['PYTHONWARNINGS'] = 'ignore'  # Suppress warnings in subprocesses
+
+# Suppress TensorFlow logging at the root level
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+logging.getLogger('tensorflow.python.util.deprecation').setLevel(logging.ERROR)
+logging.getLogger('absl').setLevel(logging.ERROR)
+
+
+
 import sys
 import json
 import yaml
 import time
+import signal
 import numpy as np
 import torch
 import torch.nn as nn
@@ -30,13 +46,41 @@ from tqdm import tqdm
 from datetime import datetime
 import matplotlib.pyplot as plt
 
+
+
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
-from utils.platform_utils import PlatformUtils, get_platform_config
+from utils.platform_utils import PlatformManager, get_platform_manager
 from models.hybrid_model import create_model, MODEL_VARIANTS
 from data.dataset import create_dataset, get_dataset_stats
 
 logger = logging.getLogger(__name__)
+
+# Global flag for graceful shutdown
+shutdown_requested = False
+
+def signal_handler(signum, frame):
+    """Handle Ctrl+C gracefully."""
+    global shutdown_requested
+    shutdown_requested = True
+    print("\n\n⚠️  Shutdown requested! Finishing current batch and saving checkpoint...")
+    print("Press Ctrl+C again to force quit (may lose progress)")
+
+# Set up signal handler
+signal.signal(signal.SIGINT, signal_handler)
+
+def worker_init_fn(worker_id):
+    """Initialize worker processes to suppress warnings."""
+    import warnings
+    import os
+    import logging
+    warnings.filterwarnings('ignore')
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+    # Suppress TensorFlow logging in workers
+    logging.getLogger('tensorflow').setLevel(logging.ERROR)
+    logging.getLogger('tensorflow.python.util.deprecation').setLevel(logging.ERROR)
+    logging.getLogger('absl').setLevel(logging.ERROR)
 
 class HybridTrainer:
     """Cross-platform trainer for hybrid road distress classification."""
@@ -50,8 +94,8 @@ class HybridTrainer:
             variant: Model variant to train ('model_a', 'model_b', 'model_c', 'model_d')
         """
         self.variant = variant
-        self.platform_utils = PlatformUtils()
         self.config = self._load_config(config_path)
+        self.platform_utils = PlatformManager(self.config)
         
         # Setup training environment
         self.setup_environment()
@@ -74,7 +118,7 @@ class HybridTrainer:
         self.val_metrics = []
         
         logger.info(f"Initialized HybridTrainer for {variant}")
-        logger.info(f"Platform: {self.platform_utils.get_platform()}")
+        logger.info(f"Platform: {self.platform_utils.platform_info['os']}")
     
     def _load_config(self, config_path: str) -> Dict:
         """Load configuration from YAML file."""
@@ -86,8 +130,7 @@ class HybridTrainer:
             config = yaml.safe_load(f)
         
         # Apply platform-specific configurations
-        platform_config = get_platform_config()
-        config = self.platform_utils.merge_configs(config, platform_config)
+        # Configuration is loaded as-is, platform manager will handle platform-specific logic
         
         logger.info(f"Loaded configuration from {config_path}")
         return config
@@ -109,7 +152,8 @@ class HybridTrainer:
     
     def setup_device(self):
         """Setup device for training with cross-platform support."""
-        self.device = self.platform_utils.get_optimal_device()
+        device_str = self.platform_utils.get_device()
+        self.device = torch.device(device_str)
         
         # Log device information
         if self.device.type == 'cuda':
@@ -123,7 +167,7 @@ class HybridTrainer:
     def setup_paths(self):
         """Setup all necessary paths with cross-platform compatibility."""
         # Results directory for this variant
-        self.results_dir = self.platform_utils.get_results_path(f"model_{self.variant[-1]}")
+        self.results_dir = Path(f"results/model_{self.variant[-1]}").resolve()
         self.platform_utils.create_directory(self.results_dir)
         
         # Subdirectories
@@ -183,10 +227,18 @@ class HybridTrainer:
         # Create data loaders with platform-specific configuration
         dataset_config = self.config['dataset']
         batch_size = dataset_config['batch_size']
-        num_workers = dataset_config.get('num_workers', 0)
+        num_workers = dataset_config.get('num_workers')
+        
+        # Get optimal number of workers from platform manager if not specified
+        if num_workers is None:
+            num_workers = self.platform_utils.get_num_workers()
+        
+        # Validate that num_workers is properly configured
+        if num_workers is None:
+            raise ValueError("num_workers could not be determined from configuration or platform manager")
         
         # Adjust batch size and workers based on platform
-        if self.platform_utils.get_platform() == 'macos':
+        if self.platform_utils.platform_info['is_mac']:
             # Reduce for thermal management on Mac
             batch_size = min(batch_size, 32)
             num_workers = min(num_workers, 4)
@@ -197,7 +249,8 @@ class HybridTrainer:
             shuffle=True,
             num_workers=num_workers,
             pin_memory=self.device.type == 'cuda',
-            persistent_workers=num_workers > 0
+            persistent_workers=num_workers > 0,
+            worker_init_fn=worker_init_fn if num_workers > 0 else None
         )
         
         val_loader = DataLoader(
@@ -206,7 +259,8 @@ class HybridTrainer:
             shuffle=False,
             num_workers=num_workers,
             pin_memory=self.device.type == 'cuda',
-            persistent_workers=num_workers > 0
+            persistent_workers=num_workers > 0,
+            worker_init_fn=worker_init_fn if num_workers > 0 else None
         )
         
         test_loader = DataLoader(
@@ -215,7 +269,8 @@ class HybridTrainer:
             shuffle=False,
             num_workers=num_workers,
             pin_memory=self.device.type == 'cuda',
-            persistent_workers=num_workers > 0
+            persistent_workers=num_workers > 0,
+            worker_init_fn=worker_init_fn if num_workers > 0 else None
         )
         
         logger.info(f"Data loaders created:")
@@ -232,8 +287,8 @@ class HybridTrainer:
         training_config = self.config['training']
         
         optimizer_name = training_config.get('optimizer', 'AdamW').lower()
-        learning_rate = training_config['learning_rate']
-        weight_decay = training_config.get('weight_decay', 0.02)
+        learning_rate = float(training_config['learning_rate'])
+        weight_decay = float(training_config.get('weight_decay', 0.02))
         
         if optimizer_name == 'adamw':
             optimizer = optim.AdamW(
@@ -271,8 +326,8 @@ class HybridTrainer:
         scheduler_name = training_config.get('scheduler', 'OneCycleLR').lower()
         
         if scheduler_name == 'onecyclelr':
-            max_lr = training_config['learning_rate']
-            epochs = training_config['num_epochs']
+            max_lr = float(training_config['learning_rate'])
+            epochs = int(training_config['num_epochs'])
             steps_per_epoch = len(train_loader)
             
             scheduler = optim.lr_scheduler.OneCycleLR(
@@ -280,19 +335,19 @@ class HybridTrainer:
                 max_lr=max_lr,
                 epochs=epochs,
                 steps_per_epoch=steps_per_epoch,
-                pct_start=training_config.get('warmup_pct', 0.3),
+                pct_start=float(training_config.get('warmup_pct', 0.3)),
                 anneal_strategy='cos'
             )
         elif scheduler_name == 'cosineannealinglr':
             scheduler = optim.lr_scheduler.CosineAnnealingLR(
                 optimizer,
-                T_max=training_config['num_epochs']
+                T_max=int(training_config['num_epochs'])
             )
         elif scheduler_name == 'steplr':
             scheduler = optim.lr_scheduler.StepLR(
                 optimizer,
-                step_size=training_config.get('step_size', 10),
-                gamma=training_config.get('gamma', 0.1)
+                step_size=int(training_config.get('step_size', 10)),
+                gamma=float(training_config.get('gamma', 0.1))
             )
         else:
             scheduler = None
@@ -323,6 +378,11 @@ class HybridTrainer:
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1} [Train]")
         
         for batch_idx, batch in enumerate(pbar):
+            # Check for shutdown request
+            if shutdown_requested:
+                logger.info("Shutdown requested during training epoch, stopping...")
+                break
+                
             # Handle different batch formats
             if len(batch) == 3:  # With masks
                 images, masks, labels = batch
@@ -340,7 +400,7 @@ class HybridTrainer:
             
             # Forward pass with mixed precision if enabled
             if self.scaler is not None:
-                with torch.cuda.amp.autocast():
+                with torch.amp.autocast('cuda'):
                     if masks is not None:
                         outputs = model(images, masks)
                     else:
@@ -383,8 +443,10 @@ class HybridTrainer:
                 optimizer.step()
             
             # Update scheduler if it's step-based
-            if self.scheduler and hasattr(self.scheduler, 'step') and len(self.scheduler.state_dict()['_step_count']) > 0:
-                self.scheduler.step()
+            if self.scheduler and hasattr(self.scheduler, 'step'):
+                # Check if it's a step-based scheduler (OneCycleLR)
+                if hasattr(self.scheduler, 'step_count'):
+                    self.scheduler.step()
             
             # Update metrics
             total_loss += loss.item()
@@ -410,6 +472,11 @@ class HybridTrainer:
             pbar = tqdm(val_loader, desc=f"Epoch {epoch+1} [Val]")
             
             for batch in pbar:
+                # Check for shutdown request
+                if shutdown_requested:
+                    logger.info("Shutdown requested during validation, stopping...")
+                    break
+                    
                 # Handle different batch formats
                 if len(batch) == 3:  # With masks
                     images, masks, labels = batch
@@ -586,7 +653,7 @@ class HybridTrainer:
         
         # Setup mixed precision if enabled
         if self.config['training'].get('mixed_precision', False) and self.device.type == 'cuda':
-            self.scaler = torch.cuda.amp.GradScaler()
+            self.scaler = torch.amp.GradScaler('cuda')
             logger.info("Enabled mixed precision training")
         
         # Setup TensorBoard logging
@@ -597,10 +664,15 @@ class HybridTrainer:
         early_stopping_counter = 0
         
         # Training loop
-        num_epochs = self.config['training']['num_epochs']
+        num_epochs = int(self.config['training']['num_epochs'])
         start_time = time.time()
         
         for epoch in range(num_epochs):
+            # Check for shutdown request
+            if shutdown_requested:
+                logger.info("Shutdown requested, stopping training gracefully...")
+                break
+                
             self.current_epoch = epoch
             
             # Train epoch
@@ -651,6 +723,12 @@ class HybridTrainer:
             if early_stopping_counter >= early_stopping_patience:
                 logger.info(f"Early stopping triggered after {early_stopping_patience} epochs without improvement")
                 break
+                
+            # Check for shutdown request after epoch
+            if shutdown_requested:
+                logger.info("Shutdown requested, saving final checkpoint...")
+                self.save_checkpoint(self.model, self.optimizer, epoch, val_metrics, is_best=False)
+                break
         
         # Training completed
         total_time = time.time() - start_time
@@ -688,7 +766,7 @@ class HybridTrainer:
             },
             'best_metrics': self.val_metrics[self.best_epoch] if self.best_epoch < len(self.val_metrics) else {},
             'platform_info': {
-                'platform': self.platform_utils.get_platform(),
+                'platform': self.platform_utils.platform_info['os'],
                 'device': str(self.device),
                 'timestamp': datetime.now().isoformat()
             }
@@ -718,11 +796,19 @@ def main():
         trainer = HybridTrainer(args.config, args.variant)
         results = trainer.train()
         
-        print(f"\nTraining completed for {args.variant}:")
-        print(f"  Best F1 score: {results['best_metric']:.4f}")
-        print(f"  Best epoch: {results['best_epoch']+1}")
-        print(f"  Total time: {results['total_time']/3600:.2f} hours")
+        if shutdown_requested:
+            print(f"\n🛑 Training interrupted for {args.variant}")
+            print("Checkpoint saved. You can resume training later.")
+        else:
+            print(f"\n✅ Training completed for {args.variant}:")
+            print(f"  Best F1 score: {results['best_metric']:.4f}")
+            print(f"  Best epoch: {results['best_epoch']+1}")
+            print(f"  Total time: {results['total_time']/3600:.2f} hours")
         
+    except KeyboardInterrupt:
+        print(f"\n🛑 Training forcefully interrupted for {args.variant}")
+        print("Some progress may be lost.")
+        sys.exit(1)
     except Exception as e:
         logger.error(f"Error in training: {e}")
         raise
