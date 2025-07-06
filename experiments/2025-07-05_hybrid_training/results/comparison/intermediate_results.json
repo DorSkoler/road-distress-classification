@@ -1,0 +1,30 @@
+{
+  "model_a": {
+    "best_metric": 0.7786990254661451,
+    "best_epoch": 24,
+    "total_time": 2479.619467973709,
+    "final_train_loss": 0.03298742875010211,
+    "final_val_loss": 0.5246057136539828
+  },
+  "model_b": {
+    "best_metric": 0.7847753271156064,
+    "best_epoch": 8,
+    "total_time": 5403.546943187714,
+    "final_train_loss": 0.011772035801629032,
+    "final_val_loss": 0.5687562852569853
+  },
+  "model_c": {
+    "best_metric": 0.7826767070219453,
+    "best_epoch": 46,
+    "total_time": 13774.719324827194,
+    "final_train_loss": 0.00524590884395109,
+    "final_val_loss": 0.7127024698924812
+  },
+  "model_d": {
+    "best_metric": 0.7839708998951486,
+    "best_epoch": 16,
+    "total_time": 8101.718962430954,
+    "final_train_loss": 0.008021809920850304,
+    "final_val_loss": 0.6960990041763117
+  }
+}
