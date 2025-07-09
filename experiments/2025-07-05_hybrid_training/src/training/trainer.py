@@ -360,11 +360,31 @@ class HybridTrainer:
         return scheduler
     
     def create_criterion(self) -> nn.Module:
-        """Create loss criterion."""
-        # Use BCEWithLogitsLoss for multi-label classification (same as successful 10/05)
-        criterion = nn.BCEWithLogitsLoss()
+        """Create loss criterion with class weights and label smoothing support."""
+        loss_config = self.config['training'].get('loss', {})
         
-        logger.info("Created criterion: BCEWithLogitsLoss")
+        # Get class weights if specified
+        class_weights = loss_config.get('class_weights', None)
+        if class_weights is not None:
+            class_weights = torch.tensor(class_weights, dtype=torch.float32, device=self.device)
+            logger.info(f"Using class weights: {class_weights.tolist()}")
+        
+        # Get label smoothing if specified
+        label_smoothing = loss_config.get('label_smoothing', 0.0)
+        
+        if label_smoothing > 0:
+            # Use CrossEntropyLoss with label smoothing for multi-class
+            criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
+            logger.info(f"Created CrossEntropyLoss with label_smoothing={label_smoothing}")
+        elif class_weights is not None:
+            # Use weighted BCEWithLogitsLoss for multi-label
+            criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
+            logger.info(f"Created weighted BCEWithLogitsLoss")
+        else:
+            # Standard BCEWithLogitsLoss
+            criterion = nn.BCEWithLogitsLoss()
+            logger.info(f"Created standard BCEWithLogitsLoss")
+        
         return criterion
     
     def train_epoch(self, model: nn.Module, train_loader: DataLoader, 
@@ -544,10 +564,25 @@ class HybridTrainer:
         
         # Overall metrics
         overall_accuracy = (binary_preds == labels).float().mean().item()
+        
+        # Calculate weighted F1 (same as before)
         weighted_f1 = np.mean([metrics[f'{name}_f1'] for name in class_names])
+        
+        # Calculate macro F1 (unweighted average - more honest with imbalanced classes)
+        f1_scores = [metrics[f'{name}_f1'] for name in class_names]
+        macro_f1 = np.mean(f1_scores)
+        
+        # Calculate macro precision and recall
+        precisions = [metrics[f'{name}_precision'] for name in class_names]
+        recalls = [metrics[f'{name}_recall'] for name in class_names]
+        macro_precision = np.mean(precisions)
+        macro_recall = np.mean(recalls)
         
         metrics['overall_accuracy'] = overall_accuracy
         metrics['weighted_f1'] = weighted_f1
+        metrics['f1_macro'] = macro_f1
+        metrics['precision_macro'] = macro_precision
+        metrics['recall_macro'] = macro_recall
         
         return metrics
     
@@ -695,10 +730,14 @@ class HybridTrainer:
             writer.add_scalar('Loss/Val', val_loss, epoch)
             writer.add_scalar('Accuracy/Val', val_metrics['overall_accuracy'], epoch)
             writer.add_scalar('F1/Val', val_metrics['weighted_f1'], epoch)
+            writer.add_scalar('F1_Macro/Val', val_metrics['f1_macro'], epoch)
+            writer.add_scalar('Precision_Macro/Val', val_metrics['precision_macro'], epoch)
+            writer.add_scalar('Recall_Macro/Val', val_metrics['recall_macro'], epoch)
             writer.add_scalar('Learning_Rate', self.optimizer.param_groups[0]['lr'], epoch)
             
-            # Check for best model
-            current_metric = val_metrics['weighted_f1']  # Use F1 as primary metric
+            # Check for best model using configurable metric
+            best_metric_name = self.config['logging'].get('best_metric', 'weighted_f1')
+            current_metric = val_metrics.get(best_metric_name, val_metrics['weighted_f1'])
             is_best = current_metric > self.best_metric
             
             if is_best:
@@ -716,8 +755,9 @@ class HybridTrainer:
             logger.info(f"  Train Loss: {train_loss:.4f}")
             logger.info(f"  Val Loss: {val_loss:.4f}")
             logger.info(f"  Val Accuracy: {val_metrics['overall_accuracy']:.4f}")
-            logger.info(f"  Val F1: {val_metrics['weighted_f1']:.4f}")
-            logger.info(f"  Best F1: {self.best_metric:.4f} (epoch {self.best_epoch+1})")
+            logger.info(f"  Val F1 (weighted): {val_metrics['weighted_f1']:.4f}")
+            logger.info(f"  Val F1 (macro): {val_metrics['f1_macro']:.4f}")
+            logger.info(f"  Best {best_metric_name}: {self.best_metric:.4f} (epoch {self.best_epoch+1})")
             
             # Early stopping check
             if early_stopping_counter >= early_stopping_patience:
@@ -732,8 +772,9 @@ class HybridTrainer:
         
         # Training completed
         total_time = time.time() - start_time
+        best_metric_name = self.config['logging'].get('best_metric', 'weighted_f1')
         logger.info(f"Training completed in {total_time/3600:.2f} hours")
-        logger.info(f"Best F1 score: {self.best_metric:.4f} at epoch {self.best_epoch+1}")
+        logger.info(f"Best {best_metric_name}: {self.best_metric:.4f} at epoch {self.best_epoch+1}")
         
         # Create final plots
         self.create_plots()
@@ -801,7 +842,7 @@ def main():
             print("Checkpoint saved. You can resume training later.")
         else:
             print(f"\n✅ Training completed for {args.variant}:")
-            print(f"  Best F1 score: {results['best_metric']:.4f}")
+            print(f"  Best metric: {results['best_metric']:.4f}")
             print(f"  Best epoch: {results['best_epoch']+1}")
             print(f"  Total time: {results['total_time']/3600:.2f} hours")
         

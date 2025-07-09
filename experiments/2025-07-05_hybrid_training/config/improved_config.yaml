@@ -1,0 +1,234 @@
+# IMPROVED Configuration for 2025-07-05 Hybrid Training Experiment
+# Fixes for class imbalance, overfitting, and evaluation issues
+# Based on investigation findings from original experiment
+
+experiment:
+  name: "hybrid_training_2025_07_05_improved"
+  description: "Improved experiment with class balancing, stronger regularization, and macro F1 evaluation"
+  version: "2.0"
+  date: "2025-07-05"
+
+# Platform Configuration
+platform:
+  os: "auto"
+  windows:
+    path_separator: "\\"
+    line_ending: "\r\n"
+    default_device: "cuda"
+    default_workers: 8
+    shell_command: "powershell"
+  mac:
+    path_separator: "/"
+    line_ending: "\n"
+    default_device: "mps"
+    default_workers: 6
+    shell_command: "bash"
+  linux:
+    path_separator: "/"
+    line_ending: "\n"
+    default_device: "cuda"
+    default_workers: 8
+    shell_command: "bash"
+
+# Dataset Configuration
+dataset:
+  coryell_path: "../../data/coryell"
+  image_size: [256, 256]
+  batch_size: 64
+  num_workers: null
+  pin_memory: true
+  num_classes: 3
+  image_extensions: [".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"]
+  annotation_extensions: [".json", ".JSON"]
+
+# Smart Splitting Configuration
+splitting:
+  method: "smart_split"
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+  preserve_road_integrity: true
+  balance_labels: true
+  min_road_images: 5
+
+# Model Configuration - IMPROVED REGULARIZATION
+model:
+  architecture: "unet_efficientnet_b3"
+  backbone: "efficientnet-b3"
+  encoder_weights: "imagenet"
+  num_classes: 3
+  activation: null
+  
+  # IMPROVED: Stronger regularization
+  classifier:
+    hidden_size: 128
+    dropout: 0.7  # INCREASED from 0.5 to prevent overfitting
+    
+  mask_integration:
+    full_masking_weight: 1.0
+    weighted_masking_weight: 0.5
+    no_masking_weight: 0.0
+
+# IMPROVED Training Configuration
+training:
+  num_epochs: 50
+  learning_rate: 1e-3
+  weight_decay: 0.05  # INCREASED from 0.02 for stronger regularization
+  optimizer: "AdamW"
+  scheduler: "OneCycleLR"
+  warmup_pct: 0.3
+  gradient_clip: 1.0
+  mixed_precision: true
+  early_stopping_patience: 5  # REDUCED from 10 for more aggressive early stopping
+  
+  # IMPROVED: Class weights to address severe imbalance
+  loss:
+    type: "cross_entropy"
+    label_smoothing: 0.1  # ADDED label smoothing for regularization
+    # Class weights based on training data distribution:
+    # Damaged: 4,586, Occlusion: 2,089, Cropped: 495
+    class_weights: [1.0, 2.2, 9.3]  # [damaged, occlusion, cropped]
+
+# IMPROVED Augmentation Configuration - Reduced to prevent overfitting
+augmentation:
+  enabled: true
+  samples_per_image: 2  # REDUCED from 3 to prevent overfitting
+  output_dir: "data/augmented"
+  
+  # More diverse but controlled augmentations
+  geometric:
+    rotation:
+      enabled: true
+      range: [-10, 10]  # INCREASED slightly for more diversity
+      probability: 0.4  # INCREASED probability
+    flip:
+      enabled: true
+      probability: 0.5
+    scale:
+      enabled: true  # ENABLED with conservative settings
+      range: [0.9, 1.1]
+      probability: 0.3
+    crop:
+      enabled: false  # Keep disabled to preserve full road context
+  
+  color:
+    brightness:
+      enabled: true
+      range: [-0.15, 0.15]  # SLIGHTLY increased for more diversity
+      probability: 0.5
+    contrast:
+      enabled: true
+      range: [-0.15, 0.15]  # SLIGHTLY increased for more diversity
+      probability: 0.5
+    saturation:
+      enabled: true  # ENABLED with conservative settings
+      range: [-0.1, 0.1]
+      probability: 0.3
+    hue:
+      enabled: false  # Keep disabled for realism
+  
+  noise:
+    gaussian:
+      enabled: true
+      std_range: [3, 12]  # REDUCED noise range
+      probability: 0.2  # REDUCED probability
+    salt_pepper:
+      enabled: false
+
+# Road Mask Configuration
+mask_generation:
+  model_checkpoint: "../../checkpoints/best_model.pth"
+  confidence_threshold: 0.5
+  road_coverage_threshold: 0.3
+  min_road_pixels: 1000
+  output_dir: "data/masks"
+  save_visualizations: true
+  dilation_kernel: 2
+  erosion_kernel: 1
+  blur_kernel: 3
+
+# Hardware Configuration
+hardware:
+  device: "auto"
+  cudnn_benchmark: true
+  prefetch_factor: 2
+  device_preferences:
+    windows: ["cuda", "cpu"]
+    mac: ["mps", "cpu"]
+    linux: ["cuda", "cpu"]
+  memory:
+    max_memory_fraction: 0.8
+    allow_growth: true
+
+# IMPROVED Logging Configuration
+logging:
+  log_dir: "logs"
+  tensorboard: true
+  save_frequency: 5
+  checkpoint_dir: "checkpoints"
+  best_metric: "val_f1_macro"  # CHANGED from val_accuracy to macro F1
+  
+  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+  
+  # IMPROVED: Added macro metrics
+  metrics:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1"
+    - "f1_macro"  # ADDED for honest evaluation
+    - "loss"
+
+# Evaluation Configuration
+evaluation:
+  test_batch_size: 32
+  save_predictions: true
+  save_visualizations: true
+  confusion_matrix: true
+  class_names:
+    - "damaged"
+    - "occlusion" 
+    - "cropped"
+
+# Model Variants Configuration
+variants:
+  model_a:
+    name: "pictures_plus_masks"
+    description: "Original images + road masks (full masking)"
+    use_masks: true
+    use_augmentation: false
+    mask_weight: 1.0
+    
+  model_b:
+    name: "pictures_plus_augmentation"
+    description: "Original + augmented images (no masks)"
+    use_masks: false
+    use_augmentation: true
+    mask_weight: 0.0
+    
+  model_c:
+    name: "pictures_plus_augmentation_plus_masks"
+    description: "Original + augmented images + masks (full masking)"
+    use_masks: true
+    use_augmentation: true
+    mask_weight: 1.0
+    
+  model_d:
+    name: "pictures_plus_augmentation_plus_weighted_masks"
+    description: "Original + augmented images + weighted masks (50% weight to non-road)"
+    use_masks: true
+    use_augmentation: true
+    mask_weight: 0.5
+
+# System Configuration
+system:
+  random_seed: 42
+  reproducible: true
+  benchmark: true
+  encoding: "utf-8"
+  file_permissions: 0o755
+  env_vars:
+    PYTORCH_CUDA_ALLOC_CONF: "max_split_size_mb:512"
+    OMP_NUM_THREADS: "1"
+    MKL_NUM_THREADS: "1" 
