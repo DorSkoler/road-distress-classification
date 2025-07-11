@@ -1,0 +1,452 @@
+[
+  {
+    "clip_limit": 8.0,
+    "tile_grid_size": [
+      16,
+      16
+    ],
+    "composite_score": 3.285481018767325,
+    "metrics": {
+      "edge_quality": 7.96051454163376e-05,
+      "contrast_enhancement": 3.4782179089024456,
+      "texture_preservation": 12.708803128490588,
+      "noise_artifacts": 12.533161163330078,
+      "overall_quality": -0.39490896463394165
+    }
+  },
+  {
+    "clip_limit": 8.0,
+    "tile_grid_size": [
+      12,
+      12
+    ],
+    "composite_score": 3.150140277976469,
+    "metrics": {
+      "edge_quality": 8.079375550801988e-05,
+      "contrast_enhancement": 3.3659527446031494,
+      "texture_preservation": 12.175397187013912,
+      "noise_artifacts": 12.26194953918457,
+      "overall_quality": -0.39638417959213257
+    }
+  },
+  {
+    "clip_limit": 8.0,
+    "tile_grid_size": [
+      8,
+      8
+    ],
+    "composite_score": 2.8607796989128143,
+    "metrics": {
+      "edge_quality": 8.20153311237811e-05,
+      "contrast_enhancement": 3.1390501480960586,
+      "texture_preservation": 11.01247559243075,
+      "noise_artifacts": 11.6670503616333,
+      "overall_quality": -0.3953738808631897
+    }
+  },
+  {
+    "clip_limit": 8.0,
+    "tile_grid_size": [
+      6,
+      6
+    ],
+    "composite_score": 2.6034878633897645,
+    "metrics": {
+      "edge_quality": 8.351242591930252e-05,
+      "contrast_enhancement": 2.9501900692112586,
+      "texture_preservation": 9.96097437159976,
+      "noise_artifacts": 11.164977073669434,
+      "overall_quality": -0.3935447931289673
+    }
+  },
+  {
+    "clip_limit": 5.0,
+    "tile_grid_size": [
+      16,
+      16
+    ],
+    "composite_score": 2.513578080911262,
+    "metrics": {
+      "edge_quality": 8.209159076160802e-05,
+      "contrast_enhancement": 3.0569398932303007,
+      "texture_preservation": 9.382963082260206,
+      "noise_artifacts": 11.461042404174805,
+      "overall_quality": -0.3975107669830322
+    }
+  },
+  {
+    "clip_limit": 5.0,
+    "tile_grid_size": [
+      12,
+      12
+    ],
+    "composite_score": 2.508545563575201,
+    "metrics": {
+      "edge_quality": 8.31061143689538e-05,
+      "contrast_enhancement": 3.0131381535260098,
+      "texture_preservation": 9.410994919648811,
+      "noise_artifacts": 11.299560546875,
+      "overall_quality": -0.3961222469806671
+    }
+  },
+  {
+    "clip_limit": 5.0,
+    "tile_grid_size": [
+      8,
+      8
+    ],
+    "composite_score": 2.3549075397464594,
+    "metrics": {
+      "edge_quality": 8.260715272388579e-05,
+      "contrast_enhancement": 2.858634365496343,
+      "texture_preservation": 8.834692228916259,
+      "noise_artifacts": 10.845189094543457,
+      "overall_quality": -0.3942538797855377
+    }
+  },
+  {
+    "clip_limit": 8.0,
+    "tile_grid_size": [
+      4,
+      4
+    ],
+    "composite_score": 2.290176171856419,
+    "metrics": {
+      "edge_quality": 8.526810654865268e-05,
+      "contrast_enhancement": 2.6647217536439207,
+      "texture_preservation": 8.751002352510557,
+      "noise_artifacts": 10.308001518249512,
+      "overall_quality": -0.39130428433418274
+    }
+  },
+  {
+    "clip_limit": 5.0,
+    "tile_grid_size": [
+      6,
+      6
+    ],
+    "composite_score": 2.2301838814641797,
+    "metrics": {
+      "edge_quality": 8.116390552984803e-05,
+      "contrast_enhancement": 2.7341126189342515,
+      "texture_preservation": 8.365241616487298,
+      "noise_artifacts": 10.48039722442627,
+      "overall_quality": -0.392368346452713
+    }
+  },
+  {
+    "clip_limit": 4.0,
+    "tile_grid_size": [
+      12,
+      12
+    ],
+    "composite_score": 2.1216395305508366,
+    "metrics": {
+      "edge_quality": 8.32112232825739e-05,
+      "contrast_enhancement": 2.7878021222362914,
+      "texture_preservation": 7.7584221147837376,
+      "noise_artifacts": 10.748564720153809,
+      "overall_quality": -0.39504289627075195
+    }
+  },
+  {
+    "clip_limit": 4.0,
+    "tile_grid_size": [
+      16,
+      16
+    ],
+    "composite_score": 2.0969818270293543,
+    "metrics": {
+      "edge_quality": 8.325912817597813e-05,
+      "contrast_enhancement": 2.8044282872631503,
+      "texture_preservation": 7.616416040751268,
+      "noise_artifacts": 10.846351623535156,
+      "overall_quality": -0.3966539204120636
+    }
+  },
+  {
+    "clip_limit": 4.0,
+    "tile_grid_size": [
+      8,
+      8
+    ],
+    "composite_score": 2.049588502949921,
+    "metrics": {
+      "edge_quality": 8.251985917994663e-05,
+      "contrast_enhancement": 2.6846330187141008,
+      "texture_preservation": 7.525025134683238,
+      "noise_artifacts": 10.40166187286377,
+      "overall_quality": -0.3927766978740692
+    }
+  },
+  {
+    "clip_limit": 5.0,
+    "tile_grid_size": [
+      4,
+      4
+    ],
+    "composite_score": 2.0210055577234396,
+    "metrics": {
+      "edge_quality": 8.436852589135773e-05,
+      "contrast_enhancement": 2.5180609365348,
+      "texture_preservation": 7.584985251580946,
+      "noise_artifacts": 9.829070091247559,
+      "overall_quality": -0.3876728415489197
+    }
+  },
+  {
+    "clip_limit": 4.0,
+    "tile_grid_size": [
+      6,
+      6
+    ],
+    "composite_score": 1.975252064417076,
+    "metrics": {
+      "edge_quality": 8.342943910630736e-05,
+      "contrast_enhancement": 2.587501105716832,
+      "texture_preservation": 7.2726493224230415,
+      "noise_artifacts": 10.091885566711426,
+      "overall_quality": -0.39055559039115906
+    }
+  },
+  {
+    "clip_limit": 4.0,
+    "tile_grid_size": [
+      4,
+      4
+    ],
+    "composite_score": 1.7982494396084636,
+    "metrics": {
+      "edge_quality": 8.526573916644367e-05,
+      "contrast_enhancement": 2.4018573449029796,
+      "texture_preservation": 6.61535437827781,
+      "noise_artifacts": 9.517592430114746,
+      "overall_quality": -0.3860257863998413
+    }
+  },
+  {
+    "clip_limit": 3.0,
+    "tile_grid_size": [
+      16,
+      16
+    ],
+    "composite_score": 1.6669845936217174,
+    "metrics": {
+      "edge_quality": 8.728523054248589e-05,
+      "contrast_enhancement": 2.5034600861044716,
+      "texture_preservation": 5.842833101787137,
+      "noise_artifacts": 10.081201553344727,
+      "overall_quality": -0.3948443531990051
+    }
+  },
+  {
+    "clip_limit": 3.0,
+    "tile_grid_size": [
+      12,
+      12
+    ],
+    "composite_score": 1.655302538720675,
+    "metrics": {
+      "edge_quality": 8.785764179128827e-05,
+      "contrast_enhancement": 2.4741122996387754,
+      "texture_preservation": 5.818420694220201,
+      "noise_artifacts": 9.953567504882812,
+      "overall_quality": -0.39270326495170593
+    }
+  },
+  {
+    "clip_limit": 3.0,
+    "tile_grid_size": [
+      8,
+      8
+    ],
+    "composite_score": 1.6360819072651003,
+    "metrics": {
+      "edge_quality": 8.617533780201766e-05,
+      "contrast_enhancement": 2.4135476425495743,
+      "texture_preservation": 5.795470802967017,
+      "noise_artifacts": 9.698943138122559,
+      "overall_quality": -0.39027535915374756
+    }
+  },
+  {
+    "clip_limit": 3.0,
+    "tile_grid_size": [
+      6,
+      6
+    ],
+    "composite_score": 1.5981861779757294,
+    "metrics": {
+      "edge_quality": 8.799617806533127e-05,
+      "contrast_enhancement": 2.3489086173564933,
+      "texture_preservation": 5.68416357862752,
+      "noise_artifacts": 9.470483779907227,
+      "overall_quality": -0.38784611225128174
+    }
+  },
+  {
+    "clip_limit": 3.0,
+    "tile_grid_size": [
+      4,
+      4
+    ],
+    "composite_score": 1.4970643003488555,
+    "metrics": {
+      "edge_quality": 8.890444819120016e-05,
+      "contrast_enhancement": 2.2185503450797355,
+      "texture_preservation": 5.337601870183657,
+      "noise_artifacts": 9.022004127502441,
+      "overall_quality": -0.3838224411010742
+    }
+  },
+  {
+    "clip_limit": 2.0,
+    "tile_grid_size": [
+      8,
+      8
+    ],
+    "composite_score": 1.1623114343864436,
+    "metrics": {
+      "edge_quality": 9.282189424620581e-05,
+      "contrast_enhancement": 2.028101788136807,
+      "texture_preservation": 3.9090659356708812,
+      "noise_artifacts": 8.61687183380127,
+      "overall_quality": -0.3872043192386627
+    }
+  },
+  {
+    "clip_limit": 2.0,
+    "tile_grid_size": [
+      16,
+      16
+    ],
+    "composite_score": 1.1476447159696255,
+    "metrics": {
+      "edge_quality": 9.85272335433427e-05,
+      "contrast_enhancement": 2.0540587653922024,
+      "texture_preservation": 3.8105864088240002,
+      "noise_artifacts": 8.795766830444336,
+      "overall_quality": -0.3927108347415924
+    }
+  },
+  {
+    "clip_limit": 2.0,
+    "tile_grid_size": [
+      12,
+      12
+    ],
+    "composite_score": 1.1425777889548645,
+    "metrics": {
+      "edge_quality": 9.561544136779748e-05,
+      "contrast_enhancement": 2.041768908074926,
+      "texture_preservation": 3.79537086479999,
+      "noise_artifacts": 8.7293119430542,
+      "overall_quality": -0.3889795243740082
+    }
+  },
+  {
+    "clip_limit": 2.0,
+    "tile_grid_size": [
+      6,
+      6
+    ],
+    "composite_score": 1.135529274609038,
+    "metrics": {
+      "edge_quality": 9.257371897605939e-05,
+      "contrast_enhancement": 1.9835391859062697,
+      "texture_preservation": 3.828535757139395,
+      "noise_artifacts": 8.440871238708496,
+      "overall_quality": -0.38500943779945374
+    }
+  },
+  {
+    "clip_limit": 2.0,
+    "tile_grid_size": [
+      4,
+      4
+    ],
+    "composite_score": 1.0966278017667441,
+    "metrics": {
+      "edge_quality": 9.376797719414349e-05,
+      "contrast_enhancement": 1.910174995055544,
+      "texture_preservation": 3.7227711017390788,
+      "noise_artifacts": 8.145356178283691,
+      "overall_quality": -0.38189491629600525
+    }
+  },
+  {
+    "clip_limit": 1.0,
+    "tile_grid_size": [
+      8,
+      8
+    ],
+    "composite_score": 0.6881546742772995,
+    "metrics": {
+      "edge_quality": 0.00010886006600427663,
+      "contrast_enhancement": 1.517761465972424,
+      "texture_preservation": 2.181728145828939,
+      "noise_artifacts": 6.903090476989746,
+      "overall_quality": -0.38338714838027954
+    }
+  },
+  {
+    "clip_limit": 1.0,
+    "tile_grid_size": [
+      6,
+      6
+    ],
+    "composite_score": 0.6802173924866461,
+    "metrics": {
+      "edge_quality": 0.00010692137606187695,
+      "contrast_enhancement": 1.5001185857138262,
+      "texture_preservation": 2.1633262711927066,
+      "noise_artifacts": 6.818431854248047,
+      "overall_quality": -0.3824154734611511
+    }
+  },
+  {
+    "clip_limit": 1.0,
+    "tile_grid_size": [
+      4,
+      4
+    ],
+    "composite_score": 0.6797267181279463,
+    "metrics": {
+      "edge_quality": 0.00010692390565156185,
+      "contrast_enhancement": 1.4817783495878394,
+      "texture_preservation": 2.181907549178323,
+      "noise_artifacts": 6.71610164642334,
+      "overall_quality": -0.38058963418006897
+    }
+  },
+  {
+    "clip_limit": 1.0,
+    "tile_grid_size": [
+      12,
+      12
+    ],
+    "composite_score": 0.6693943188772988,
+    "metrics": {
+      "edge_quality": 0.00010960611317164611,
+      "contrast_enhancement": 1.5099069299414787,
+      "texture_preservation": 2.101690148985363,
+      "noise_artifacts": 6.898318767547607,
+      "overall_quality": -0.38599294424057007
+    }
+  },
+  {
+    "clip_limit": 1.0,
+    "tile_grid_size": [
+      16,
+      16
+    ],
+    "composite_score": 0.6547288273119493,
+    "metrics": {
+      "edge_quality": 0.00010765858671185722,
+      "contrast_enhancement": 1.4887751399308629,
+      "texture_preservation": 2.0573306612220774,
+      "noise_artifacts": 6.828044891357422,
+      "overall_quality": -0.38731396198272705
+    }
+  }
+]

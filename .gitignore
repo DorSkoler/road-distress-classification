@@ -7,6 +7,7 @@ experiments/2025-06-28_smart_split_training/masks/
 experiments/2025-06-28_smart_split_training/splits/
 experiments/2025-06-28_smart_split_training/splits_backup/
 */models/
+coryell/
 
 # Ignore all experiment folders except the current one
 experiments/*
