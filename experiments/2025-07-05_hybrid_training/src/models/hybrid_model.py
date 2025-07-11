@@ -14,7 +14,7 @@ Architecture adapted from the successful 88.99% accuracy model.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import segmentation_models_pytorch as smp
+import timm
 from typing import Optional, Tuple, Dict, Any
 import logging
 
@@ -69,21 +69,39 @@ class HybridRoadDistressModel(nn.Module):
             'encoder_weights': encoder_weights
         }
         
-        # UNet backbone with EfficientNet-B3 encoder (from successful 10/05 experiment)
-        self.backbone = smp.Unet(
-            encoder_name=encoder_name,
-            encoder_weights=encoder_weights,
-            classes=num_classes,
-            activation=None  # No activation for raw logits
+        # EfficientNet-B3 backbone for classification (improved from UNet)
+        self.backbone = timm.create_model(
+            encoder_name,
+            pretrained=(encoder_weights == 'imagenet'),
+            num_classes=0,  # Remove classification head
+            global_pool='',  # Remove global pooling
+            drop_rate=0.0   # We'll add our own dropout
         )
         
-        # Classification head (from successful 10/05 experiment)
-        self.classifier = nn.Sequential(
+        # Get feature dimension from backbone
+        backbone_features = self.backbone.num_features
+        
+        # Feature processing layers with regularization
+        self.feature_processor = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
             nn.Flatten(),
-            nn.Linear(num_classes, 128),
+            nn.Dropout(0.3),  # First dropout layer
+            nn.Linear(backbone_features, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+            nn.Dropout(0.4),  # Second dropout layer
+        )
+        
+        # Classification head with better regularization
+        self.classifier = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256),
             nn.ReLU(),
             nn.Dropout(dropout_rate),
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate * 0.5),  # Reduced dropout for final layer
             nn.Linear(128, num_classes)
         )
         
@@ -120,8 +138,8 @@ class HybridRoadDistressModel(nn.Module):
         Returns:
             Classification logits [B, num_classes]
         """
-        # Get features from UNet backbone
-        features = self.backbone(x)  # [B, num_classes, H, W]
+        # Get features from EfficientNet backbone
+        features = self.backbone(x)  # [B, backbone_features, H, W]
         
         # Apply masking strategy based on model variant
         if self.use_masks and mask is not None:
@@ -129,8 +147,11 @@ class HybridRoadDistressModel(nn.Module):
         else:
             masked_features = features
         
+        # Process features with regularization
+        processed_features = self.feature_processor(masked_features)
+        
         # Classification
-        logits = self.classifier(masked_features)
+        logits = self.classifier(processed_features)
         
         return logits
     
@@ -139,11 +160,11 @@ class HybridRoadDistressModel(nn.Module):
         Apply masking strategy to features.
         
         Args:
-            features: Feature maps from backbone [B, num_classes, H, W]
+            features: Feature maps from backbone [B, backbone_features, H, W]
             mask: Road masks [B, 1, H, W]
             
         Returns:
-            Masked features [B, num_classes, H, W]
+            Masked features [B, backbone_features, H, W]
         """
         # Ensure mask has same spatial dimensions as features
         if mask.shape[-2:] != features.shape[-2:]:
@@ -174,32 +195,26 @@ class HybridRoadDistressModel(nn.Module):
         Returns:
             Dictionary of feature maps
         """
-        # Get encoder features
-        encoder_features = self.backbone.encoder(x)
-        
-        # Get decoder features
-        decoder_features = self.backbone.decoder(*encoder_features)
-        
-        # Get segmentation head output
-        segmentation_head = self.backbone.segmentation_head(decoder_features)
+        # Get backbone features
+        backbone_features = self.backbone(x)
         
         # Apply masking if specified
         if self.use_masks and mask is not None:
-            masked_features = self._apply_masking(segmentation_head, mask)
+            masked_features = self._apply_masking(backbone_features, mask)
         else:
-            masked_features = segmentation_head
+            masked_features = backbone_features
         
-        # Get classification features
-        pooled_features = F.adaptive_avg_pool2d(masked_features, 1)
-        flattened_features = torch.flatten(pooled_features, 1)
+        # Get processed features
+        processed_features = self.feature_processor(masked_features)
+        
+        # Get classification output
+        logits = self.classifier(processed_features)
         
         return {
-            'encoder_features': encoder_features,
-            'decoder_features': decoder_features,
-            'segmentation_features': segmentation_head,
+            'backbone_features': backbone_features,
             'masked_features': masked_features,
-            'pooled_features': pooled_features,
-            'flattened_features': flattened_features
+            'processed_features': processed_features,
+            'logits': logits
         }
     
     def predict(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None, 
@@ -228,7 +243,7 @@ class HybridRoadDistressModel(nn.Module):
         """Get model information for logging and debugging."""
         return {
             'model_name': 'HybridRoadDistressModel',
-            'architecture': 'UNet + EfficientNet-B3',
+            'architecture': 'EfficientNet-B3 + Enhanced Classification Head',
             'total_parameters': self.count_parameters(),
             'config': self.config,
             'device': next(self.parameters()).device.type,

@@ -1,0 +1,26 @@
+{
+  "model_a": {
+    "best_metric": 0.7786990254661451,
+    "best_epoch": 24,
+    "total_time": 2517.1365551948547,
+    "final_train_loss": 0.03298742875010211,
+    "final_val_loss": 0.5246057136539828
+  },
+  "model_b": {
+    "best_metric": 0.7847753271156064,
+    "best_epoch": 8,
+    "total_time": 5775.432794570923,
+    "final_train_loss": 0.011772035801629032,
+    "final_val_loss": 0.5687562852569853
+  },
+  "model_c": {
+    "error": "DataLoader worker (pid(s) 12392, 12408, 7984, 22848, 22480, 25348, 23340, 5652) exited unexpectedly"
+  },
+  "model_d": {
+    "best_metric": 0.0,
+    "best_epoch": 0,
+    "total_time": 0.0,
+    "final_train_loss": 0,
+    "final_val_loss": 0
+  }
+}

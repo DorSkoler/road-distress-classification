@@ -1,5 +1,5 @@
 {
-  "variant": "model_b",
+  "variant": "model_c",
   "config": {
     "experiment": {
       "name": "hybrid_training_2025_07_05",
@@ -37,7 +37,7 @@
         256,
         256
       ],
-      "batch_size": 32,
+      "batch_size": 64,
       "num_workers": null,
       "pin_memory": true,
       "num_classes": 3,
@@ -64,15 +64,14 @@
       "min_road_images": 5
     },
     "model": {
-      "architecture": "efficientnet_b3_classification",
-      "backbone": "efficientnet_b3",
-      "encoder_name": "efficientnet_b3",
+      "architecture": "unet_efficientnet_b3",
+      "backbone": "efficientnet-b3",
       "encoder_weights": "imagenet",
       "num_classes": 3,
       "activation": null,
       "classifier": {
         "hidden_size": 128,
-        "dropout_rate": 0.5
+        "dropout": 0.5
       },
       "mask_integration": {
         "full_masking_weight": 1.0,
@@ -82,18 +81,17 @@
     },
     "training": {
       "num_epochs": 50,
-      "learning_rate": "5e-5",
-      "weight_decay": 0.1,
+      "learning_rate": "1e-3",
+      "weight_decay": 0.02,
       "optimizer": "AdamW",
-      "scheduler": "ReduceLROnPlateau",
-      "scheduler_patience": 5,
-      "scheduler_factor": 0.5,
+      "scheduler": "OneCycleLR",
+      "warmup_pct": 0.3,
       "gradient_clip": 1.0,
       "mixed_precision": true,
-      "early_stopping_patience": 7,
+      "early_stopping_patience": 10,
       "loss": {
-        "type": "bce_with_logits",
-        "label_smoothing": 0.1,
+        "type": "cross_entropy",
+        "label_smoothing": 0.0,
         "class_weights": null
       }
     },
@@ -264,35 +262,32 @@
     }
   },
   "training_results": {
-    "best_metric": 0.7897968347371954,
-    "best_epoch": 21,
-    "total_epochs": 29,
-    "total_time_hours": 1.258382595512602,
-    "final_train_loss": 0.3963718845108055,
-    "final_val_loss": 0.37842560374909745
+    "best_metric": 0.7826767070219453,
+    "best_epoch": 46,
+    "total_epochs": 50,
+    "total_time_hours": 3.8263109235631094,
+    "final_train_loss": 0.00524590884395109,
+    "final_val_loss": 0.7127024698924812
   },
   "best_metrics": {
-    "damage_precision": 0.6366983737342743,
-    "damage_recall": 0.5861581920903954,
-    "damage_f1": 0.6103838799823503,
-    "damage_accuracy": 0.8148588202404249,
-    "occlusion_precision": 0.8246445497630331,
-    "occlusion_recall": 0.7718631178707225,
-    "occlusion_f1": 0.797381342062193,
-    "occlusion_accuracy": 0.913474979032709,
-    "crop_precision": 0.9638009049773756,
-    "crop_recall": 0.9594594594594594,
-    "crop_f1": 0.961625282167043,
-    "crop_accuracy": 0.9964355605255801,
-    "overall_accuracy": 0.908256471157074,
-    "weighted_f1": 0.7897968347371954,
-    "f1_macro": 0.7897968347371954,
-    "precision_macro": 0.8083812761582276,
-    "recall_macro": 0.7724935898068592
+    "damage_precision": 0.6856540084388185,
+    "damage_recall": 0.5508474576271186,
+    "damage_f1": 0.6109022556390977,
+    "damage_accuracy": 0.8263908303047246,
+    "occlusion_precision": 0.8768551945447253,
+    "occlusion_recall": 0.6926489226869454,
+    "occlusion_f1": 0.773942290670915,
+    "occlusion_accuracy": 0.910749231199329,
+    "crop_precision": 0.9639097744360903,
+    "crop_recall": 0.9624624624624625,
+    "crop_f1": 0.9631855747558228,
+    "crop_accuracy": 0.9965753424657534,
+    "overall_accuracy": 0.9112384915351868,
+    "weighted_f1": 0.7826767070219453
   },
   "platform_info": {
     "platform": "windows",
     "device": "cuda",
-    "timestamp": "2025-07-11T02:44:01.376941"
+    "timestamp": "2025-07-06T08:50:20.110117"
   }
 }

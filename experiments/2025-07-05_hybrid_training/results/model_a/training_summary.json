@@ -37,7 +37,7 @@
         256,
         256
       ],
-      "batch_size": 64,
+      "batch_size": 32,
       "num_workers": null,
       "pin_memory": true,
       "num_classes": 3,
@@ -64,14 +64,15 @@
       "min_road_images": 5
     },
     "model": {
-      "architecture": "unet_efficientnet_b3",
-      "backbone": "efficientnet-b3",
+      "architecture": "efficientnet_b3_classification",
+      "backbone": "efficientnet_b3",
+      "encoder_name": "efficientnet_b3",
       "encoder_weights": "imagenet",
       "num_classes": 3,
       "activation": null,
       "classifier": {
         "hidden_size": 128,
-        "dropout": 0.5
+        "dropout_rate": 0.5
       },
       "mask_integration": {
         "full_masking_weight": 1.0,
@@ -81,17 +82,18 @@
     },
     "training": {
       "num_epochs": 50,
-      "learning_rate": "1e-3",
-      "weight_decay": 0.02,
+      "learning_rate": "5e-5",
+      "weight_decay": 0.1,
       "optimizer": "AdamW",
-      "scheduler": "OneCycleLR",
-      "warmup_pct": 0.3,
+      "scheduler": "ReduceLROnPlateau",
+      "scheduler_patience": 5,
+      "scheduler_factor": 0.5,
       "gradient_clip": 1.0,
       "mixed_precision": true,
-      "early_stopping_patience": 10,
+      "early_stopping_patience": 7,
       "loss": {
-        "type": "cross_entropy",
-        "label_smoothing": 0.0,
+        "type": "bce_with_logits",
+        "label_smoothing": 0.1,
         "class_weights": null
       }
     },
@@ -262,32 +264,35 @@
     }
   },
   "training_results": {
-    "best_metric": 0.7786990254661451,
-    "best_epoch": 24,
-    "total_epochs": 35,
-    "total_time_hours": 0.6887831855482526,
-    "final_train_loss": 0.03298742875010211,
-    "final_val_loss": 0.5246057136539828
+    "best_metric": 0.38568164009779277,
+    "best_epoch": 1,
+    "total_epochs": 9,
+    "total_time_hours": 0.14656881676779854,
+    "final_train_loss": 0.8828340151792398,
+    "final_val_loss": 0.34368650968137543
   },
   "best_metrics": {
-    "damage_precision": 0.6443361753958587,
-    "damage_recall": 0.5858250276854928,
-    "damage_f1": 0.6136890951276103,
-    "damage_accuracy": 0.817032967032967,
-    "occlusion_precision": 0.8617771509167842,
-    "occlusion_recall": 0.7222222222222222,
-    "occlusion_f1": 0.7858520900321544,
-    "occlusion_accuracy": 0.9085164835164835,
-    "crop_precision": 0.96875,
-    "crop_recall": 0.9064327485380117,
-    "crop_f1": 0.9365558912386707,
-    "crop_accuracy": 0.9942307692307693,
-    "overall_accuracy": 0.906593382358551,
-    "weighted_f1": 0.7786990254661451
+    "damage_precision": 0.271285205568145,
+    "damage_recall": 0.9280177187153932,
+    "damage_f1": 0.4198396793587174,
+    "damage_accuracy": 0.3637362637362637,
+    "occlusion_precision": 0.614240170031881,
+    "occlusion_recall": 0.6832151300236406,
+    "occlusion_f1": 0.6468942361499721,
+    "occlusion_accuracy": 0.8266483516483516,
+    "crop_precision": 0.047589032461393004,
+    "crop_recall": 0.8830409356725146,
+    "crop_f1": 0.090311004784689,
+    "crop_accuracy": 0.16428571428571428,
+    "overall_accuracy": 0.4515567719936371,
+    "weighted_f1": 0.38568164009779277,
+    "f1_macro": 0.38568164009779277,
+    "precision_macro": 0.31103813602047303,
+    "recall_macro": 0.8314245948038496
   },
   "platform_info": {
     "platform": "windows",
     "device": "cuda",
-    "timestamp": "2025-07-06T03:27:14.065775"
+    "timestamp": "2025-07-11T01:27:35.173639"
   }
 }

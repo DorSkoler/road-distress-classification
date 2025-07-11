@@ -1,0 +1,5 @@
+Variant,Status,Best F1,Best Epoch,Training Time (h),Error
+model_a,Success,0.7786990254661451,25,0.6992045986652374,
+model_b,Success,0.7847753271156064,9,1.6042868873808118,
+model_c,Failed,0.0,0,0.0,"DataLoader worker (pid(s) 12392, 12408, 7984, 22848, 22480, 25348, 23340, 5652) exited unexpectedly"
+model_d,Success,0.0,1,0.0,

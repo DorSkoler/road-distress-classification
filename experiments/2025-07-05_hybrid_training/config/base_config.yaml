@@ -40,7 +40,7 @@ dataset:
   # Use forward slashes - will be converted to platform-appropriate paths
   coryell_path: "../../data/coryell"  # Path to raw coryell data
   image_size: [256, 256]  # Same as successful 10/05 experiment
-  batch_size: 64  # Same as successful 10/05 experiment
+  batch_size: 32  # Reduced from 64 for more stable training
   num_workers: null  # Will be set based on platform
   pin_memory: true
   num_classes: 3  # damaged, occlusion, cropped
@@ -59,10 +59,11 @@ splitting:
   balance_labels: true
   min_road_images: 5
 
-# Model Configuration (from successful 10/05 experiment)
+# Model Configuration (improved EfficientNet-B3 classification)
 model:
-  architecture: "unet_efficientnet_b3"  # Successful architecture from 10/05
-  backbone: "efficientnet-b3"
+  architecture: "efficientnet_b3_classification"  # Improved architecture
+  backbone: "efficientnet_b3"
+  encoder_name: "efficientnet_b3"  # Correct timm model name
   encoder_weights: "imagenet"
   num_classes: 3
   activation: null  # No activation (raw logits)
@@ -70,7 +71,7 @@ model:
   # Classification head configuration
   classifier:
     hidden_size: 128
-    dropout: 0.5
+    dropout_rate: 0.5
     
   # Mask integration settings
   mask_integration:
@@ -78,23 +79,24 @@ model:
     weighted_masking_weight: 0.5  # For Model D
     no_masking_weight: 0.0        # For Model B
 
-# Training Configuration (from successful 10/05 experiment)
+# Training Configuration (improved to prevent overfitting)
 training:
   num_epochs: 50
-  learning_rate: 1e-3  # Same as successful 10/05
-  weight_decay: 0.02
+  learning_rate: 5e-5  # Reduced from 1e-3 to prevent overfitting
+  weight_decay: 0.1    # Increased from 0.02 for better regularization
   optimizer: "AdamW"
-  scheduler: "OneCycleLR"
-  warmup_pct: 0.3
+  scheduler: "ReduceLROnPlateau"  # Changed from OneCycleLR for better convergence
+  scheduler_patience: 5
+  scheduler_factor: 0.5
   gradient_clip: 1.0
   mixed_precision: true
-  early_stopping_patience: 10
+  early_stopping_patience: 7  # Reduced from 10 for earlier stopping
   
   # Loss configuration
   loss:
-    type: "cross_entropy"  # Same as successful 10/05
-    label_smoothing: 0.0
-    class_weights: null  # Will be calculated from data
+    type: "bce_with_logits"  # More appropriate for multi-label classification
+    label_smoothing: 0.1     # Added label smoothing for regularization
+    class_weights: null      # Will be calculated from data
 
 # Augmentation Configuration (conservative approach from 28/06)
 augmentation:

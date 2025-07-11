@@ -117,6 +117,10 @@ class HybridTrainer:
         self.val_losses = []
         self.val_metrics = []
         
+        # Loss configuration (will be set when creating criterion)
+        self.loss_type = None
+        self.label_smoothing = 0.0
+        
         logger.info(f"Initialized HybridTrainer for {variant}")
         logger.info(f"Platform: {self.platform_utils.platform_info['os']}")
     
@@ -189,8 +193,8 @@ class HybridTrainer:
         model = create_model(
             variant=self.variant,
             num_classes=model_config.get('num_classes', 3),
-            dropout_rate=model_config.get('dropout_rate', 0.5),
-            encoder_name=model_config.get('encoder_name', 'efficientnet-b3'),
+            dropout_rate=model_config.get('classifier', {}).get('dropout_rate', 0.5),
+            encoder_name=model_config.get('encoder_name', 'efficientnet_b3'),
             encoder_weights=model_config.get('encoder_weights', 'imagenet')
         )
         
@@ -338,6 +342,15 @@ class HybridTrainer:
                 pct_start=float(training_config.get('warmup_pct', 0.3)),
                 anneal_strategy='cos'
             )
+        elif scheduler_name == 'reducelronplateau':
+            scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                mode='min',
+                factor=float(training_config.get('scheduler_factor', 0.5)),
+                patience=int(training_config.get('scheduler_patience', 5)),
+                verbose=True,
+                min_lr=1e-7
+            )
         elif scheduler_name == 'cosineannealinglr':
             scheduler = optim.lr_scheduler.CosineAnnealingLR(
                 optimizer,
@@ -362,6 +375,7 @@ class HybridTrainer:
     def create_criterion(self) -> nn.Module:
         """Create loss criterion with class weights and label smoothing support."""
         loss_config = self.config['training'].get('loss', {})
+        loss_type = loss_config.get('type', 'bce_with_logits')
         
         # Get class weights if specified
         class_weights = loss_config.get('class_weights', None)
@@ -372,20 +386,38 @@ class HybridTrainer:
         # Get label smoothing if specified
         label_smoothing = loss_config.get('label_smoothing', 0.0)
         
-        if label_smoothing > 0:
-            # Use CrossEntropyLoss with label smoothing for multi-class
-            criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
-            logger.info(f"Created CrossEntropyLoss with label_smoothing={label_smoothing}")
-        elif class_weights is not None:
-            # Use weighted BCEWithLogitsLoss for multi-label
-            criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
-            logger.info(f"Created weighted BCEWithLogitsLoss")
+        if loss_type == 'bce_with_logits':
+            if class_weights is not None:
+                criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
+                logger.info(f"Created weighted BCEWithLogitsLoss")
+            else:
+                criterion = nn.BCEWithLogitsLoss()
+                logger.info(f"Created standard BCEWithLogitsLoss")
+        elif loss_type == 'cross_entropy':
+            if label_smoothing > 0:
+                criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
+                logger.info(f"Created CrossEntropyLoss with label_smoothing={label_smoothing}")
+            else:
+                criterion = nn.CrossEntropyLoss(weight=class_weights)
+                logger.info(f"Created CrossEntropyLoss")
         else:
-            # Standard BCEWithLogitsLoss
-            criterion = nn.BCEWithLogitsLoss()
-            logger.info(f"Created standard BCEWithLogitsLoss")
+            raise ValueError(f"Unknown loss type: {loss_type}")
+        
+        # Store loss type for proper label smoothing handling
+        self.loss_type = loss_type
+        self.label_smoothing = label_smoothing
         
         return criterion
+    
+    def apply_label_smoothing(self, labels: torch.Tensor, smoothing: float = 0.1) -> torch.Tensor:
+        """Apply label smoothing to targets for BCE loss."""
+        if smoothing == 0.0:
+            return labels
+        
+        # Apply label smoothing: smooth_labels = (1 - smoothing) * labels + smoothing * (1 - labels)
+        # This makes positive labels slightly less confident and negative labels slightly more confident
+        smoothed_labels = (1 - smoothing) * labels + smoothing * (1 - labels)
+        return smoothed_labels
     
     def train_epoch(self, model: nn.Module, train_loader: DataLoader, 
                    optimizer: optim.Optimizer, criterion: nn.Module, epoch: int) -> float:
@@ -417,6 +449,10 @@ class HybridTrainer:
             
             # Zero gradients
             optimizer.zero_grad()
+            
+            # Apply label smoothing if using BCE loss
+            if self.loss_type == 'bce_with_logits' and self.label_smoothing > 0:
+                labels = self.apply_label_smoothing(labels, self.label_smoothing)
             
             # Forward pass with mixed precision if enabled
             if self.scaler is not None:
@@ -462,11 +498,9 @@ class HybridTrainer:
                 # Optimizer step
                 optimizer.step()
             
-            # Update scheduler if it's step-based
-            if self.scheduler and hasattr(self.scheduler, 'step'):
-                # Check if it's a step-based scheduler (OneCycleLR)
-                if hasattr(self.scheduler, 'step_count'):
-                    self.scheduler.step()
+            # Update scheduler if it's step-based (OneCycleLR)
+            if self.scheduler and hasattr(self.scheduler, 'step_count'):
+                self.scheduler.step()
             
             # Update metrics
             total_loss += loss.item()
@@ -716,9 +750,14 @@ class HybridTrainer:
             # Validate epoch
             val_loss, val_metrics = self.validate_epoch(self.model, val_loader, self.criterion, epoch)
             
-            # Update scheduler if it's epoch-based
-            if self.scheduler and not hasattr(self.scheduler, '_step_count'):
-                self.scheduler.step()
+            # Update scheduler based on type
+            if self.scheduler:
+                if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                    # ReduceLROnPlateau needs the validation loss
+                    self.scheduler.step(val_loss)
+                elif not hasattr(self.scheduler, 'step_count'):
+                    # Epoch-based schedulers (not OneCycleLR which is step-based)
+                    self.scheduler.step()
             
             # Store metrics
             self.train_losses.append(train_loss)
@@ -753,11 +792,16 @@ class HybridTrainer:
             # Log progress
             logger.info(f"Epoch {epoch+1}/{num_epochs}:")
             logger.info(f"  Train Loss: {train_loss:.4f}")
-            logger.info(f"  Val Loss: {val_loss:.4f}")
+            logger.info(f"  Val Loss: {val_loss:.4f} (ratio: {val_loss/train_loss:.2f})")
             logger.info(f"  Val Accuracy: {val_metrics['overall_accuracy']:.4f}")
             logger.info(f"  Val F1 (weighted): {val_metrics['weighted_f1']:.4f}")
             logger.info(f"  Val F1 (macro): {val_metrics['f1_macro']:.4f}")
+            logger.info(f"  Learning Rate: {self.optimizer.param_groups[0]['lr']:.2e}")
             logger.info(f"  Best {best_metric_name}: {self.best_metric:.4f} (epoch {self.best_epoch+1})")
+            
+            # Warning for potential overfitting
+            if val_loss / train_loss > 3.0:
+                logger.warning(f"  ⚠️  High validation/training loss ratio ({val_loss/train_loss:.2f}) - potential overfitting!")
             
             # Early stopping check
             if early_stopping_counter >= early_stopping_patience:
