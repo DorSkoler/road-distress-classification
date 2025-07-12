@@ -41,8 +41,14 @@ class EfficientDownloader:
         key = obj['Key']
         size = obj['Size']
         
-        # Create local path preserving S3 structure
-        local_path = self.download_dir / key
+        # Create local path, removing the v1/ prefix to match existing structure
+        # Convert v1/coryell/... to coryell/...
+        if key.startswith('v1/'):
+            local_key = key[3:]  # Remove 'v1/' prefix
+        else:
+            local_key = key
+        
+        local_path = self.download_dir / local_key
         local_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Skip if file already exists and has same size
