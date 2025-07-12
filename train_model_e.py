@@ -12,6 +12,13 @@ Model E Configuration:
 """
 
 import os
+# Suppress TensorFlow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+
 import argparse
 import shutil
 import torch
@@ -33,15 +40,97 @@ from typing import Dict, List, Tuple, Optional
 from PIL import Image
 from torchvision import transforms
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import requests
+import urllib.parse
+
+def download_model_from_gdrive(file_id: str, output_path: str) -> bool:
+    """
+    Download model file from Google Drive
+    
+    Args:
+        file_id: Google Drive file ID
+        output_path: Local path to save the file
+        
+    Returns:
+        bool: True if download successful, False otherwise
+    """
+    try:
+        # Create output directory if it doesn't exist
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        # Google Drive download URL
+        url = f"https://drive.google.com/uc?id={file_id}&export=download"
+        
+        print(f"Downloading model from Google Drive...")
+        print(f"URL: {url}")
+        print(f"Saving to: {output_path}")
+        
+        # Start download
+        response = requests.get(url, stream=True)
+        
+        # Check if we need to handle the virus scan warning
+        if 'virus scan warning' in response.text.lower():
+            # Extract the confirm token
+            for line in response.text.split('\n'):
+                if 'confirm=' in line:
+                    confirm_token = line.split('confirm=')[1].split('&')[0]
+                    break
+            else:
+                confirm_token = None
+            
+            if confirm_token:
+                # Retry with confirm token
+                confirm_url = f"https://drive.google.com/uc?export=download&confirm={confirm_token}&id={file_id}"
+                response = requests.get(confirm_url, stream=True)
+        
+        # Check if download was successful
+        if response.status_code == 200:
+            total_size = int(response.headers.get('content-length', 0))
+            
+            with open(output_path, 'wb') as f:
+                if total_size > 0:
+                    with tqdm(total=total_size, unit='B', unit_scale=True, desc="Downloading") as pbar:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+                                pbar.update(len(chunk))
+                else:
+                    # No content-length header, download without progress bar
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+            
+            print(f"✓ Model downloaded successfully to {output_path}")
+            return True
+        else:
+            print(f"✗ Download failed with status code: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"✗ Error downloading model: {e}")
+        return False
 
 
 class RoadMaskGenerator:
     """Road mask generator using segmentation model."""
     
-    def __init__(self, model_path: str = "experiments/2025-06-28_smart_split_training/../../checkpoints/best_model.pth"):
+    def __init__(self, model_path: str = "checkpoints/best_model.pth"):
         """Initialize the road mask generator."""
         self.model_path = Path(model_path)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        # Download model if it doesn't exist
+        if not self.model_path.exists():
+            print(f"Model not found at {self.model_path}")
+            print("Downloading from Google Drive...")
+            
+            # Google Drive file ID from the URL
+            file_id = "1w-55rSswB74tAsFwsv1xxdCXl0qNgV25"
+            
+            success = download_model_from_gdrive(file_id, str(self.model_path))
+            if not success:
+                print("Failed to download model. Using ImageNet weights only.")
+        
         self.model = self._load_model()
         
     def _load_model(self) -> nn.Module:
