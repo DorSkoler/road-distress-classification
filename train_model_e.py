@@ -489,12 +489,12 @@ class ModelETrainer:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Create data loaders
+        # Create data loaders (num_workers=0 to avoid CUDA multiprocessing issues)
         self.train_loader = DataLoader(
             train_dataset,
             batch_size=batch_size,
             shuffle=True,
-            num_workers=num_workers,
+            num_workers=0,
             pin_memory=True
         )
         
@@ -502,7 +502,7 @@ class ModelETrainer:
             val_dataset,
             batch_size=batch_size,
             shuffle=False,
-            num_workers=num_workers,
+            num_workers=0,
             pin_memory=True
         )
         
