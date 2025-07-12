@@ -84,12 +84,12 @@ The script will:
     setup_logging(args.verbose)
     logger = logging.getLogger(__name__)
     
-    print("🚀 Starting Comprehensive Model Comparison")
+    print("Starting Comprehensive Model Comparison")
     print("=" * 60)
-    print(f"📁 Config: {args.config}")
-    print(f"📁 Results directory: {args.results_dir}")
-    print(f"🤖 Models to compare: {', '.join(args.variants)}")
-    print(f"📝 Verbose logging: {args.verbose}")
+    print(f"Config: {args.config}")
+    print(f"Results directory: {args.results_dir}")
+    print(f"Models to compare: {', '.join(args.variants)}")
+    print(f"Verbose logging: {args.verbose}")
     print("=" * 60)
     
     try:

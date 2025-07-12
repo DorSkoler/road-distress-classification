@@ -97,9 +97,9 @@ class ComparisonRunner:
                 result = self.evaluator.evaluate_model(variant)
                 evaluation_results[variant] = result
                 successful_evaluations += 1
-                logger.info(f"✅ {variant} evaluation completed")
+                logger.info(f"SUCCESS: {variant} evaluation completed")
             except Exception as e:
-                logger.error(f"❌ {variant} evaluation failed: {e}")
+                logger.error(f"FAILED: {variant} evaluation failed: {e}")
                 evaluation_results[variant] = {'error': str(e)}
         
         # Add evaluation summary
