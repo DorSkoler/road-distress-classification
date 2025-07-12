@@ -55,13 +55,13 @@ class ModelEvaluator:
         
         return config
     
-    def evaluate_model(self, variant: str, checkpoint_name: str = "best_checkpoint.pth") -> Dict[str, Any]:
+    def evaluate_model(self, variant: str, checkpoint_name: str = "best_model.pth") -> Dict[str, Any]:
         """
         Evaluate a single model variant.
         
         Args:
             variant: Model variant ('model_a', 'model_b', 'model_c', 'model_d')
-            checkpoint_name: Name of checkpoint file to load
+            checkpoint_name: Name of checkpoint file to load (default: best_model.pth)
             
         Returns:
             Dictionary containing evaluation results
@@ -137,7 +137,7 @@ class ModelEvaluator:
         
         # Load checkpoint
         logger.info(f"Loading checkpoint: {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
         
         if 'model_state_dict' in checkpoint:
             model.load_state_dict(checkpoint['model_state_dict'])

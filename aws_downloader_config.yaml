@@ -1,0 +1,60 @@
+# AWS Data Downloader Configuration Template
+# Edit this file to customize your download settings
+
+# Download directory (relative to script location)
+download_dir: "data"
+
+# Parallel download settings
+parallel_downloads: 10  # Number of concurrent downloads
+chunk_size: 8192       # Download chunk size in bytes
+retry_attempts: 3      # Number of retry attempts for failed downloads
+retry_delay: 1         # Initial delay between retries (exponential backoff)
+
+# File filtering
+file_extensions:
+  - ".png"
+  - ".jpg"
+  - ".jpeg"
+  - ".tif"
+  - ".tiff"
+  - ".json"
+  - ".txt"
+  - ".csv"
+  - ".xml"
+
+# Patterns to exclude from download
+excluded_patterns:
+  - ".DS_Store"
+  - "Thumbs.db"
+  - "__pycache__"
+  - ".git"
+  - ".tmp"
+  - ".temp"
+
+# Download behavior
+verify_checksums: true          # Verify file integrity using ETag
+create_directory_structure: true # Preserve S3 directory structure
+overwrite_existing: false       # Skip existing files
+max_file_size_mb: 1000          # Skip files larger than this (MB)
+dry_run: false                  # Show what would be downloaded without downloading
+
+# S3 bucket and prefix filters (empty means all)
+buckets: []    # Specific buckets to download from (empty = all accessible)
+prefixes: []   # Specific prefixes to download (empty = all objects)
+
+# Example configurations for common scenarios:
+# For specific buckets:
+# buckets: ["my-road-data-bucket", "backup-bucket"]
+#
+# For specific prefixes (e.g., only coryell data):
+# prefixes: ["coryell/", "road-distress/"]
+#
+# For production downloads:
+# parallel_downloads: 20
+# verify_checksums: true
+# overwrite_existing: false
+#
+# For development/testing:
+# dry_run: true
+# max_file_size_mb: 100
+# parallel_downloads: 5 
