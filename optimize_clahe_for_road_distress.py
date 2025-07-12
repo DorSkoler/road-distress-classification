@@ -20,6 +20,9 @@ from sklearn.preprocessing import MinMaxScaler
 import json
 from pathlib import Path
 
+# Set random seed for reproducible results with slight randomization
+np.random.seed(42)
+
 
 class CLAHEOptimizer:
     """Optimizes CLAHE parameters for road distress analysis"""
@@ -34,9 +37,9 @@ class CLAHEOptimizer:
         self.lab_image = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2LAB)
         self.l_channel = self.lab_image[:, :, 0]
         
-        # Parameter ranges to test
-        self.clip_limits = [1.0, 2.0, 3.0, 4.0, 5.0, 8.0]
-        self.tile_grid_sizes = [(4, 4), (6, 6), (8, 8), (12, 12), (16, 16)]
+        # Parameter ranges to test - more diverse for better discrimination
+        self.clip_limits = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0]
+        self.tile_grid_sizes = [(3, 3), (4, 4), (6, 6), (8, 8), (10, 10), (12, 12), (16, 16), (20, 20)]
         
         self.results = []
     
@@ -162,7 +165,16 @@ class CLAHEOptimizer:
     
     def calculate_composite_score(self, metrics: Dict) -> float:
         """Calculate weighted composite score for road distress analysis"""
-        # Weights optimized for road distress detection
+        # Analyze image characteristics for adaptive weighting
+        gray = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2GRAY)
+        
+        # Image characteristics
+        mean_brightness = np.mean(gray)
+        contrast_std = np.std(gray)
+        texture_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        dynamic_range = np.percentile(gray, 95) - np.percentile(gray, 5)
+        
+        # Adaptive weights based on image characteristics
         weights = {
             'edge_quality': 0.35,          # High weight - crucial for crack detection
             'contrast_enhancement': 0.25,   # Important for shadow/occlusion handling
@@ -170,6 +182,29 @@ class CLAHEOptimizer:
             'noise_artifacts': -0.10,       # Negative weight - penalize noise
             'overall_quality': 0.30         # Overall image quality
         }
+        
+        # Adapt weights based on image characteristics
+        if mean_brightness < 100:  # Dark image
+            weights['contrast_enhancement'] += 0.05
+            weights['overall_quality'] += 0.05
+            
+        if contrast_std < 30:  # Low contrast image
+            weights['contrast_enhancement'] += 0.1
+            weights['edge_quality'] += 0.05
+            
+        if texture_var < 500:  # Low texture image
+            weights['texture_preservation'] += 0.1
+            weights['edge_quality'] += 0.05
+            
+        if dynamic_range < 100:  # Poor dynamic range
+            weights['contrast_enhancement'] += 0.05
+            weights['overall_quality'] += 0.05
+        
+        # Normalize weights to sum to 1.0
+        total_positive_weight = sum(max(0, w) for w in weights.values())
+        for key in weights:
+            if weights[key] > 0:
+                weights[key] = weights[key] / total_positive_weight
         
         # Handle NaN/inf values in metrics
         clean_metrics = {}
@@ -184,6 +219,10 @@ class CLAHEOptimizer:
         normalized_metrics['noise_artifacts'] = 1.0 / (1.0 + clean_metrics['noise_artifacts'])
         
         score = sum(weights[key] * normalized_metrics[key] for key in weights.keys())
+        
+        # Add small random factor to break ties between similar scores
+        score += np.random.normal(0, 0.001)
+        
         return score if np.isfinite(score) else 0.0
     
     def optimize(self) -> Dict:
