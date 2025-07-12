@@ -94,7 +94,7 @@ class AWSDataDownloader:
             'verify_checksums': True,
             'create_directory_structure': True,
             'overwrite_existing': False,
-            'buckets': [],  # Will be discovered automatically
+            'buckets': ["road-distress-datasets"],  # Specific bucket name
             'prefixes': [],  # Will download all prefixes if empty
             'max_file_size_mb': 1000,  # Skip files larger than 1GB
             'dry_run': False

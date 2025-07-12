@@ -39,8 +39,8 @@ max_file_size_mb: 1000          # Skip files larger than this (MB)
 dry_run: false                  # Show what would be downloaded without downloading
 
 # S3 bucket and prefix filters (empty means all)
-buckets: []    # Specific buckets to download from (empty = all accessible)
-prefixes: []   # Specific prefixes to download (empty = all objects)
+buckets: ["road-distress-datasets"]    # Specific bucket to download from
+prefixes: ["coryell/", "road-distress/"]   # Specific prefixes to download
 
 # Example configurations for common scenarios:
 # For specific buckets:
