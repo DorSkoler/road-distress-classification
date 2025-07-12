@@ -432,8 +432,6 @@ class RoadDistressModelE(nn.Module):
         
         # Enhanced classifier head for multi-label classification
         self.classifier = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Flatten(),
             nn.Linear(backbone_features, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(inplace=True),
