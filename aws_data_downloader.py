@@ -577,7 +577,7 @@ def create_default_config() -> None:
         "max_file_size_mb": 1000,
         "dry_run": False,
         "buckets": [],
-        "prefixes": ['coryell/', 'road-distress/']
+        "prefixes": ['v1/coryell/', 'road-distress/']
     }
     
     with open('aws_downloader_config.yaml', 'w') as f:
