@@ -89,7 +89,7 @@ class AWSDataDownloader:
             'chunk_size': 8192,
             'retry_attempts': 3,
             'retry_delay': 1,
-            'file_extensions': ['.png', '.jpg', '.jpeg', '.json', '.txt', '.csv', '.tif', '.tiff'],
+            'file_extensions': [],  # Empty list means no filtering
             'excluded_patterns': ['.DS_Store', 'Thumbs.db', '__pycache__'],
             'verify_checksums': True,
             'create_directory_structure': True,
@@ -569,7 +569,7 @@ def create_default_config() -> None:
         "chunk_size": 8192,
         "retry_attempts": 3,
         "retry_delay": 1,
-        "file_extensions": [".png", ".jpg", ".jpeg", ".json", ".txt", ".csv", ".tif", ".tiff"],
+        "file_extensions": [],  # Empty list means no filtering
         "excluded_patterns": [".DS_Store", "Thumbs.db", "__pycache__"],
         "verify_checksums": True,
         "create_directory_structure": True,

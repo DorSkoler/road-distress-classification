@@ -10,17 +10,8 @@ chunk_size: 8192       # Download chunk size in bytes
 retry_attempts: 3      # Number of retry attempts for failed downloads
 retry_delay: 1         # Initial delay between retries (exponential backoff)
 
-# File filtering
-file_extensions:
-  - ".png"
-  - ".jpg"
-  - ".jpeg"
-  - ".tif"
-  - ".tiff"
-  - ".json"
-  - ".txt"
-  - ".csv"
-  - ".xml"
+# File filtering (empty list means download all files)
+file_extensions: []
 
 # Patterns to exclude from download
 excluded_patterns:
