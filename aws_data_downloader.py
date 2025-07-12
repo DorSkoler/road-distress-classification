@@ -131,9 +131,22 @@ class AWSDataDownloader:
                 region_name=region
             )
             
-            # Test credentials
-            self.s3_client.list_buckets()
-            logger.info("AWS credentials validated successfully")
+            # Test credentials - if we have specific buckets configured, test with those instead
+            if self.config.get('buckets'):
+                # Test with the first configured bucket
+                test_bucket = self.config['buckets'][0]
+                try:
+                    self.s3_client.head_bucket(Bucket=test_bucket)
+                    logger.info(f"AWS credentials validated successfully for bucket: {test_bucket}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        logger.warning(f"Bucket {test_bucket} not found, but credentials appear valid")
+                    else:
+                        raise
+            else:
+                # Fallback to list_buckets if no specific buckets configured
+                self.s3_client.list_buckets()
+                logger.info("AWS credentials validated successfully")
             
         except NoCredentialsError:
             logger.error("AWS credentials not found or invalid")
@@ -154,20 +167,43 @@ class AWSDataDownloader:
         if not self.s3_client:
             raise RuntimeError("AWS client not initialized")
         
+        # If specific buckets are configured, use those directly
+        if self.config.get('buckets'):
+            configured_buckets = self.config['buckets']
+            logger.info(f"Using configured buckets: {configured_buckets}")
+            
+            # Verify each bucket is accessible
+            accessible_buckets = []
+            for bucket in configured_buckets:
+                try:
+                    self.s3_client.head_bucket(Bucket=bucket)
+                    accessible_buckets.append(bucket)
+                    logger.info(f"Verified access to bucket: {bucket}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        logger.warning(f"Bucket {bucket} not found")
+                    elif e.response['Error']['Code'] == '403':
+                        logger.warning(f"Access denied to bucket {bucket}")
+                    else:
+                        logger.error(f"Error accessing bucket {bucket}: {e}")
+            
+            return accessible_buckets
+        
+        # Fallback to discovering buckets if none configured
         try:
             response = self.s3_client.list_buckets()
             buckets = [bucket['Name'] for bucket in response['Buckets']]
-            
-            # Filter buckets based on configuration
-            if self.config.get('buckets'):
-                buckets = [b for b in buckets if b in self.config['buckets']]
-            
             logger.info(f"Discovered {len(buckets)} accessible buckets")
             return buckets
             
         except ClientError as e:
-            logger.error(f"Error discovering buckets: {e}")
-            return []
+            if e.response['Error']['Code'] == 'AccessDenied':
+                logger.error("Access denied for listing buckets. Please configure specific bucket names in the config file.")
+                logger.error("Add bucket names to the 'buckets' list in your configuration.")
+                return []
+            else:
+                logger.error(f"Error discovering buckets: {e}")
+                return []
     
     def list_bucket_objects(self, bucket_name: str, prefix: str = '') -> List[Dict]:
         """List all objects in a bucket with optional prefix.
@@ -566,6 +602,7 @@ def main():
     parser.add_argument('--parallel', type=int, help='Number of parallel downloads')
     parser.add_argument('--buckets', nargs='+', help='Specific buckets to download from')
     parser.add_argument('--prefixes', nargs='+', help='Specific prefixes to download')
+    parser.add_argument('--bucket', help='Single bucket to download from (alternative to --buckets)')
     
     args = parser.parse_args()
     
@@ -587,6 +624,8 @@ def main():
         downloader.config['parallel_downloads'] = args.parallel
     if args.buckets:
         downloader.config['buckets'] = args.buckets
+    elif args.bucket:
+        downloader.config['buckets'] = [args.bucket]
     if args.prefixes:
         downloader.config['prefixes'] = args.prefixes
     
