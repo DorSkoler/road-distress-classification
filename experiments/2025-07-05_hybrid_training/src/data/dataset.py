@@ -3,11 +3,15 @@
 Cross-Platform Dataset for Hybrid Training Experiment
 Date: 2025-07-05
 
-This module implements a flexible dataset class that supports all 4 model variants:
+This module implements a flexible dataset class that supports all 8 model variants:
 - Model A: Pictures + masks
 - Model B: Pictures + augmentation (no masks)
 - Model C: Pictures + augmentation + masks
 - Model D: Pictures + augmentation + weighted masks
+- Model E: CLAHE enhanced pictures + masks (no augmentation)
+- Model F: CLAHE enhanced pictures + weighted masks (no augmentation)
+- Model G: CLAHE enhanced pictures + masks + augmentation
+- Model H: CLAHE enhanced pictures + weighted masks + augmentation
 
 Adapted from successful architectures with cross-platform compatibility.
 """
@@ -35,11 +39,15 @@ class HybridRoadDataset(Dataset):
     """
     Cross-platform dataset for hybrid road distress classification.
     
-    Supports all 4 model variants with different input strategies:
+    Supports all 8 model variants with different input strategies:
     - Model A: Original images + masks
     - Model B: Original + augmented images (no masks)
     - Model C: Original + augmented images + masks
     - Model D: Original + augmented images + weighted masks
+    - Model E: CLAHE enhanced images + masks (no augmentation)
+    - Model F: CLAHE enhanced images + weighted masks (no augmentation)
+    - Model G: CLAHE enhanced images + masks + augmentation
+    - Model H: CLAHE enhanced images + weighted masks + augmentation
     """
     
     def __init__(self, 
@@ -55,7 +63,8 @@ class HybridRoadDataset(Dataset):
         Args:
             split_name: Name of the split (train, val, test)
             config: Configuration dictionary
-            variant: Model variant name ('model_a', 'model_b', 'model_c', 'model_d')
+                         variant: Model variant name ('model_a', 'model_b', 'model_c', 'model_d', 
+                     'model_e', 'model_f', 'model_g', 'model_h')
             transform: Optional transforms to apply
             use_augmented: Override augmentation usage
             use_masks: Override mask usage
@@ -99,10 +108,14 @@ class HybridRoadDataset(Dataset):
         """Setup configuration based on model variant."""
         # Default configurations for each variant
         variant_configs = {
-            'model_a': {'use_augmented': False, 'use_masks': True},
-            'model_b': {'use_augmented': True, 'use_masks': False},
-            'model_c': {'use_augmented': True, 'use_masks': True},
-            'model_d': {'use_augmented': True, 'use_masks': True}
+            'model_a': {'use_augmented': False, 'use_masks': True, 'use_clahe': False},
+            'model_b': {'use_augmented': True, 'use_masks': False, 'use_clahe': False},
+            'model_c': {'use_augmented': True, 'use_masks': True, 'use_clahe': False},
+            'model_d': {'use_augmented': True, 'use_masks': True, 'use_clahe': False},
+            'model_e': {'use_augmented': False, 'use_masks': True, 'use_clahe': True},
+            'model_f': {'use_augmented': False, 'use_masks': True, 'use_clahe': True},
+            'model_g': {'use_augmented': True, 'use_masks': True, 'use_clahe': True},
+            'model_h': {'use_augmented': True, 'use_masks': True, 'use_clahe': True}
         }
         
         if self.variant not in variant_configs:
@@ -112,6 +125,100 @@ class HybridRoadDataset(Dataset):
         config = variant_configs[self.variant]
         self.use_augmented = use_augmented if use_augmented is not None else config['use_augmented']
         self.use_masks = use_masks if use_masks is not None else config['use_masks']
+        self.use_clahe = config['use_clahe']
+        
+        # Load CLAHE parameters if needed
+        if self.use_clahe:
+            self.load_clahe_params()
+    
+    def load_clahe_params(self):
+        """Load CLAHE parameters from JSON file."""
+        clahe_params_path = Path("clahe_params.json")
+        
+        if not clahe_params_path.exists():
+            logger.warning(f"CLAHE parameters file not found: {clahe_params_path}")
+            logger.warning("Using default CLAHE parameters for all images")
+            self.clahe_params = {}
+            return
+        
+        try:
+            with open(clahe_params_path, 'r') as f:
+                data = json.load(f)
+            
+            # Convert JSON data to expected format
+            self.clahe_params = {}
+            for image_path, param_data in data.items():
+                if 'tile_grid_size' in param_data:
+                    tile_grid_size = param_data['tile_grid_size']
+                    tile_grid_x, tile_grid_y = tile_grid_size[0], tile_grid_size[1]
+                else:
+                    # Fallback values
+                    tile_grid_x, tile_grid_y = 8, 8
+                
+                self.clahe_params[image_path] = {
+                    'clip_limit': param_data.get('clip_limit', 3.0),
+                    'tile_grid_x': tile_grid_x,
+                    'tile_grid_y': tile_grid_y
+                }
+            
+            logger.info(f"Loaded CLAHE parameters for {len(self.clahe_params)} images")
+            
+        except Exception as e:
+            logger.error(f"Error loading CLAHE parameters from {clahe_params_path}: {str(e)}")
+            logger.warning("Using default CLAHE parameters for all images")
+            self.clahe_params = {}
+    
+    def apply_clahe(self, image: np.ndarray, image_path: str) -> np.ndarray:
+        """Apply CLAHE enhancement to image."""
+        # Get CLAHE parameters for this image
+        # Extract the relative path in the format expected by clahe_params.json
+        path_obj = Path(image_path)
+        
+        # Convert to the format used in clahe_params.json: "Co Rd XXX\img\filename.png"
+        if 'coryell' in path_obj.parts:
+            coryell_idx = path_obj.parts.index('coryell')
+            if coryell_idx + 1 < len(path_obj.parts):
+                # Get road name and filename
+                road_name = path_obj.parts[coryell_idx + 1]
+                filename = path_obj.name
+                # Format: "Co Rd XXX\img\filename.png" (with backslashes as in JSON)
+                clahe_key = f"{road_name}\\img\\{filename}"
+            else:
+                clahe_key = str(path_obj.name)
+        else:
+            clahe_key = str(path_obj.name)
+        
+        # Try both formats if first doesn't work
+        clahe_params = self.clahe_params.get(clahe_key)
+        if clahe_params is None:
+            # Try with forward slashes
+            clahe_key_forward = clahe_key.replace('\\', '/')
+            clahe_params = self.clahe_params.get(clahe_key_forward)
+        
+        if clahe_params is None:
+            # Default parameters
+            clahe_params = {
+                'clip_limit': 3.0,
+                'tile_grid_x': 8,
+                'tile_grid_y': 8
+            }
+        
+        # Convert to LAB color space
+        lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+        l_channel = lab[:, :, 0]
+        
+        # Apply CLAHE to L channel
+        clahe = cv2.createCLAHE(
+            clipLimit=clahe_params['clip_limit'],
+            tileGridSize=(clahe_params['tile_grid_x'], clahe_params['tile_grid_y'])
+        )
+        enhanced_l = clahe.apply(l_channel)
+        
+        # Reconstruct image
+        lab[:, :, 0] = enhanced_l
+        enhanced_bgr = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+        
+        return enhanced_bgr
     
     def load_data(self):
         """Load data samples based on configuration."""
@@ -251,6 +358,10 @@ class HybridRoadDataset(Dataset):
             if image is None:
                 logger.warning(f"Failed to load image: {image_path}")
                 return None
+            
+            # Apply CLAHE enhancement if needed (before RGB conversion)
+            if self.use_clahe and not sample['is_augmented']:  # Only apply CLAHE to original images
+                image = self.apply_clahe(image, str(image_path))
             
             # Convert BGR to RGB
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

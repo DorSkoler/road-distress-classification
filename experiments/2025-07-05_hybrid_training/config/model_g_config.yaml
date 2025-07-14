@@ -1,0 +1,96 @@
+# Model G Configuration: CLAHE Enhanced Images + Full Masks + Augmentation
+# Inherits from base configuration with specific settings for Model G
+
+# Experiment Configuration
+experiment:
+  name: "model_g_clahe_full_masks_aug"
+  description: "Model G: CLAHE enhanced images with full road masking (1.0 opacity) + augmentation"
+  version: "1.0"
+  model_variant: "model_g"
+
+# Model Configuration
+model:
+  variant: "model_g"
+  num_classes: 3
+  encoder_name: "efficientnet_b3"
+  encoder_weights: "imagenet"
+  
+  # Model G specific settings
+  use_masks: true
+  mask_weight: 1.0
+  use_clahe: true
+  use_augmentation: true
+  
+  classifier:
+    dropout_rate: 0.5
+
+# Dataset Configuration
+dataset:
+  # Use forward slashes - will be converted to platform-appropriate paths
+  coryell_path: "../../coryell"  # Path to raw coryell data
+  image_size: [256, 256]
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  num_classes: 3
+  
+  # CLAHE preprocessing
+  clahe:
+    enabled: true
+    params_file: "clahe_params.json"
+    default_clip_limit: 3.0
+    default_tile_grid: [8, 8]
+  
+  # Augmentation (enabled for Model G)
+  augmentation:
+    enabled: true
+    techniques:
+      - rotation
+      - flip
+      - brightness
+      - contrast
+  
+  # Masking
+  masking:
+    enabled: true
+    weight: 1.0  # Full masking
+    
+# Training Configuration
+training:
+  batch_size: 32
+  num_epochs: 50
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  
+  # Loss configuration
+  loss:
+    type: "bce_with_logits"
+    label_smoothing: 0.1  # Slight label smoothing with augmentation
+  
+  # Early stopping
+  early_stopping:
+    patience: 10
+    monitor: "val_accuracy"
+    
+  # Mixed precision
+  mixed_precision:
+    enabled: true
+    
+# Optimizer Configuration
+optimizer:
+  type: "adamw"
+  lr: 1e-3
+  weight_decay: 1e-4
+  
+# Scheduler Configuration
+scheduler:
+  type: "cosine_annealing"
+  max_lr: 1e-3
+  min_lr: 1e-6
+  warmup_epochs: 5
+
+# Logging Configuration
+logging:
+  tensorboard: true
+  save_frequency: 5  # Save checkpoint every 5 epochs
+  log_frequency: 100  # Log metrics every 100 batches 

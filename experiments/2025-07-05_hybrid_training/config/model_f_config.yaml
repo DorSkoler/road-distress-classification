@@ -1,0 +1,91 @@
+# Model F Configuration: CLAHE Enhanced Images + Partial Masks (No Augmentation)
+# Inherits from base configuration with specific settings for Model F
+
+# Experiment Configuration
+experiment:
+  name: "model_f_clahe_partial_masks"
+  description: "Model F: CLAHE enhanced images with partial road masking (0.5 opacity)"
+  version: "1.0"
+  model_variant: "model_f"
+
+# Model Configuration
+model:
+  variant: "model_f"
+  num_classes: 3
+  encoder_name: "efficientnet_b3"
+  encoder_weights: "imagenet"
+  
+  # Model F specific settings
+  use_masks: true
+  mask_weight: 0.5
+  use_clahe: true
+  use_augmentation: false
+  
+  classifier:
+    dropout_rate: 0.5
+
+# Dataset Configuration
+dataset:
+  # Use forward slashes - will be converted to platform-appropriate paths
+  coryell_path: "../../coryell"  # Path to raw coryell data
+  image_size: [256, 256]
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  num_classes: 3
+  
+  # CLAHE preprocessing
+  clahe:
+    enabled: true
+    params_file: "clahe_params.json"
+    default_clip_limit: 3.0
+    default_tile_grid: [8, 8]
+  
+  # Augmentation (disabled for Model F)
+  augmentation:
+    enabled: false
+  
+  # Masking
+  masking:
+    enabled: true
+    weight: 0.5  # Partial masking
+    
+# Training Configuration
+training:
+  batch_size: 32
+  num_epochs: 50
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  
+  # Loss configuration
+  loss:
+    type: "bce_with_logits"
+    label_smoothing: 0.0
+  
+  # Early stopping
+  early_stopping:
+    patience: 10
+    monitor: "val_accuracy"
+    
+  # Mixed precision
+  mixed_precision:
+    enabled: true
+    
+# Optimizer Configuration
+optimizer:
+  type: "adamw"
+  lr: 1e-3
+  weight_decay: 1e-4
+  
+# Scheduler Configuration
+scheduler:
+  type: "cosine_annealing"
+  max_lr: 1e-3
+  min_lr: 1e-6
+  warmup_epochs: 5
+
+# Logging Configuration
+logging:
+  tensorboard: true
+  save_frequency: 5  # Save checkpoint every 5 epochs
+  log_frequency: 100  # Log metrics every 100 batches 

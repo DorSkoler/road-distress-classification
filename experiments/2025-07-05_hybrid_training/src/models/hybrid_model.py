@@ -39,7 +39,7 @@ class HybridRoadDistressModel(nn.Module):
                  use_masks: bool = True,
                  mask_weight: float = 1.0,
                  dropout_rate: float = 0.5,
-                 encoder_name: str = 'efficientnet-b3',
+                 encoder_name: str = 'efficientnet_b3',
                  encoder_weights: str = 'imagenet'):
         """
         Initialize the hybrid model.
@@ -252,108 +252,179 @@ class HybridRoadDistressModel(nn.Module):
 
 
 class ModelVariantFactory:
-    """Factory class for creating different model variants."""
+    """Factory class for creating different model variants with specific configurations."""
     
     @staticmethod
     def create_model_a(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
         """
-        Create Model A: Pictures + full masks.
+        Create Model A: Pictures + full masks (no augmentation)
         
-        Args:
-            num_classes: Number of output classes
-            **kwargs: Additional model parameters
-            
-        Returns:
-            Model A instance
+        This is the baseline model that uses original images with full road masking.
+        Masks are applied at full weight (1.0) to focus entirely on road pixels.
         """
         return HybridRoadDistressModel(
             num_classes=num_classes,
             use_masks=True,
             mask_weight=1.0,
-            **kwargs
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
         )
     
     @staticmethod
     def create_model_b(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
         """
-        Create Model B: Pictures + augmentation (no masks).
+        Create Model B: Pictures + augmentation (no masks)
         
-        Args:
-            num_classes: Number of output classes
-            **kwargs: Additional model parameters
-            
-        Returns:
-            Model B instance
+        This model focuses on learning from augmented images without any masking.
+        Helps the model become more robust to various image conditions.
         """
         return HybridRoadDistressModel(
             num_classes=num_classes,
             use_masks=False,
             mask_weight=0.0,
-            **kwargs
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
         )
     
     @staticmethod
     def create_model_c(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
         """
-        Create Model C: Pictures + augmentation + full masks.
+        Create Model C: Pictures + augmentation + full masks
         
-        Args:
-            num_classes: Number of output classes
-            **kwargs: Additional model parameters
-            
-        Returns:
-            Model C instance
+        Combines data augmentation with full road masking for robust training
+        that focuses on road pixels while handling various image conditions.
         """
         return HybridRoadDistressModel(
             num_classes=num_classes,
             use_masks=True,
             mask_weight=1.0,
-            **kwargs
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
         )
     
     @staticmethod
     def create_model_d(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
         """
-        Create Model D: Pictures + augmentation + weighted masks (50% non-road weight).
+        Create Model D: Pictures + augmentation + weighted masks (50% non-road weight)
         
-        Args:
-            num_classes: Number of output classes
-            **kwargs: Additional model parameters
-            
-        Returns:
-            Model D instance
+        Uses partial masking with augmentation to learn from both road and non-road
+        pixels while maintaining focus on road surface distress.
         """
         return HybridRoadDistressModel(
             num_classes=num_classes,
             use_masks=True,
-            mask_weight=0.5,  # 50% weight for non-road pixels
-            **kwargs
+            mask_weight=0.5,
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
         )
     
     @staticmethod
+    def create_model_e(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
+        """
+        Create Model E: CLAHE enhanced images + full masks (no augmentation)
+        
+        Uses CLAHE (Contrast Limited Adaptive Histogram Equalization) preprocessing
+        with full road masking (1.0 opacity) to enhance contrast and focus on road pixels.
+        Optimized for images with optimized CLAHE parameters from JSON.
+        """
+        return HybridRoadDistressModel(
+            num_classes=num_classes,
+            use_masks=True,
+            mask_weight=1.0,
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
+        )
+    
+    @staticmethod
+    def create_model_f(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
+        """
+        Create Model F: CLAHE enhanced images + partial masks (no augmentation)
+        
+        Uses CLAHE preprocessing with partial road masking (0.5 opacity) to learn
+        from both road and non-road pixels while maintaining contrast enhancement.
+        Optimized for images with optimized CLAHE parameters from JSON.
+        """
+        return HybridRoadDistressModel(
+            num_classes=num_classes,
+            use_masks=True,
+            mask_weight=0.5,
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
+        )
+    
+    @staticmethod
+    def create_model_g(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
+        """
+        Create Model G: CLAHE enhanced images + full masks + augmentation
+        
+        Combines CLAHE preprocessing, full road masking (1.0 opacity), and data
+        augmentation for robust training with enhanced contrast and road focus.
+        Optimized for images with optimized CLAHE parameters from JSON.
+        """
+        return HybridRoadDistressModel(
+            num_classes=num_classes,
+            use_masks=True,
+            mask_weight=1.0,
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
+        )
+    
+    @staticmethod
+    def create_model_h(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
+        """
+        Create Model H: CLAHE enhanced images + partial masks + augmentation
+        
+        Uses CLAHE preprocessing, partial road masking (0.5 opacity), and data
+        augmentation for balanced learning from road and non-road pixels with
+        enhanced contrast and robustness.
+        Optimized for images with optimized CLAHE parameters from JSON.
+        """
+        return HybridRoadDistressModel(
+            num_classes=num_classes,
+            use_masks=True,
+            mask_weight=0.5,
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
+        )
+
+    @staticmethod
     def create_variant(variant_name: str, num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
         """
-        Create model variant by name.
+        Create a model variant by name.
         
         Args:
-            variant_name: Name of the variant ('model_a', 'model_b', 'model_c', 'model_d')
+            variant_name: Name of the variant ('model_a', 'model_b', 'model_c', 'model_d', 
+                         'model_e', 'model_f', 'model_g', 'model_h')
             num_classes: Number of output classes
-            **kwargs: Additional model parameters
+            **kwargs: Additional parameters for model creation
             
         Returns:
-            Model instance for the specified variant
+            Configured HybridRoadDistressModel instance
         """
-        variant_creators = {
+        variant_methods = {
             'model_a': ModelVariantFactory.create_model_a,
             'model_b': ModelVariantFactory.create_model_b,
             'model_c': ModelVariantFactory.create_model_c,
-            'model_d': ModelVariantFactory.create_model_d
+            'model_d': ModelVariantFactory.create_model_d,
+            'model_e': ModelVariantFactory.create_model_e,
+            'model_f': ModelVariantFactory.create_model_f,
+            'model_g': ModelVariantFactory.create_model_g,
+            'model_h': ModelVariantFactory.create_model_h
         }
         
-        if variant_name not in variant_creators:
-            raise ValueError(f"Unknown variant: {variant_name}. Available: {list(variant_creators.keys())}")
+        if variant_name not in variant_methods:
+            raise ValueError(f"Unknown variant: {variant_name}. Available variants: {list(variant_methods.keys())}")
         
-        return variant_creators[variant_name](num_classes, **kwargs)
+        logger.info(f"Creating {variant_name} with {num_classes} classes")
+        return variant_methods[variant_name](num_classes=num_classes, **kwargs)
 
 
 def create_model(variant: str = 'model_a', **kwargs) -> HybridRoadDistressModel:
@@ -361,53 +432,35 @@ def create_model(variant: str = 'model_a', **kwargs) -> HybridRoadDistressModel:
     Convenience function to create a model variant.
     
     Args:
-        variant: Model variant name
+        variant: Model variant name ('model_a', 'model_b', 'model_c', 'model_d', 
+                'model_e', 'model_f', 'model_g', 'model_h')
         **kwargs: Additional model parameters
         
     Returns:
-        Model instance
+        Configured HybridRoadDistressModel instance
+        
+    Available Variants:
+        - model_a: Pictures + full masks (no augmentation)
+        - model_b: Pictures + augmentation (no masks)
+        - model_c: Pictures + augmentation + full masks
+        - model_d: Pictures + augmentation + partial masks (0.5)
+        - model_e: CLAHE enhanced images + full masks (no augmentation)
+        - model_f: CLAHE enhanced images + partial masks (no augmentation)
+        - model_g: CLAHE enhanced images + full masks + augmentation
+        - model_h: CLAHE enhanced images + partial masks + augmentation
     """
     return ModelVariantFactory.create_variant(variant, **kwargs)
 
 
 # Model variant configurations for easy reference
-MODEL_VARIANTS = {
-    'model_a': {
-        'name': 'Model A',
-        'description': 'Pictures + full masks',
-        'use_masks': True,
-        'mask_weight': 1.0,
-        'use_augmentation': False
-    },
-    'model_b': {
-        'name': 'Model B', 
-        'description': 'Pictures + augmentation (no masks)',
-        'use_masks': False,
-        'mask_weight': 0.0,
-        'use_augmentation': True
-    },
-    'model_c': {
-        'name': 'Model C',
-        'description': 'Pictures + augmentation + full masks',
-        'use_masks': True,
-        'mask_weight': 1.0,
-        'use_augmentation': True
-    },
-    'model_d': {
-        'name': 'Model D',
-        'description': 'Pictures + augmentation + weighted masks (50% non-road)',
-        'use_masks': True,
-        'mask_weight': 0.5,
-        'use_augmentation': True
-    }
-}
+MODEL_VARIANTS = ['model_a', 'model_b', 'model_c', 'model_d', 'model_e', 'model_f', 'model_g', 'model_h']
 
 
 if __name__ == "__main__":
     # Test model creation
     print("Testing model variants...")
     
-    for variant_name in MODEL_VARIANTS.keys():
+    for variant_name in MODEL_VARIANTS:
         print(f"\n{variant_name.upper()}:")
         model = create_model(variant_name)
         info = model.get_model_info()
