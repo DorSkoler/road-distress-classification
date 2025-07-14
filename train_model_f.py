@@ -9,9 +9,17 @@ Model F Configuration:
 - Cleanup preprocessing data between epochs to save storage
 - No data augmentation
 - Multi-label classification (damage, occlusion, crop)
+- Enhanced logging for training process inspection
 """
 
 import os
+# Suppress TensorFlow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+
 import argparse
 import shutil
 import torch
@@ -33,15 +41,100 @@ from typing import Dict, List, Tuple, Optional
 from PIL import Image
 from torchvision import transforms
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import requests
+import urllib.parse
+import time
+import psutil
+import gc
+
+def download_model_from_gdrive(file_id: str, output_path: str) -> bool:
+    """
+    Download model file from Google Drive
+    
+    Args:
+        file_id: Google Drive file ID
+        output_path: Local path to save the file
+        
+    Returns:
+        bool: True if download successful, False otherwise
+    """
+    try:
+        # Create output directory if it doesn't exist
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        # Google Drive download URL
+        url = f"https://drive.google.com/uc?id={file_id}&export=download"
+        
+        print(f"Downloading model from Google Drive...")
+        print(f"URL: {url}")
+        print(f"Saving to: {output_path}")
+        
+        # Start download
+        response = requests.get(url, stream=True)
+        
+        # Check if we need to handle the virus scan warning
+        if 'virus scan warning' in response.text.lower():
+            # Extract the confirm token
+            for line in response.text.split('\n'):
+                if 'confirm=' in line:
+                    confirm_token = line.split('confirm=')[1].split('&')[0]
+                    break
+            else:
+                confirm_token = None
+            
+            if confirm_token:
+                # Retry with confirm token
+                confirm_url = f"https://drive.google.com/uc?export=download&confirm={confirm_token}&id={file_id}"
+                response = requests.get(confirm_url, stream=True)
+        
+        # Check if download was successful
+        if response.status_code == 200:
+            total_size = int(response.headers.get('content-length', 0))
+            
+            with open(output_path, 'wb') as f:
+                if total_size > 0:
+                    with tqdm(total=total_size, unit='B', unit_scale=True, desc="Downloading") as pbar:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+                                pbar.update(len(chunk))
+                else:
+                    # No content-length header, download without progress bar
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+            
+            print(f"✓ Model downloaded successfully to {output_path}")
+            return True
+        else:
+            print(f"✗ Download failed with status code: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"✗ Error downloading model: {e}")
+        return False
 
 
 class RoadMaskGenerator:
     """Road mask generator using segmentation model."""
     
-    def __init__(self, model_path: str = "experiments/2025-06-28_smart_split_training/../../checkpoints/best_model.pth"):
+    def __init__(self, model_path: str = "checkpoints/best_model.pth"):
         """Initialize the road mask generator."""
         self.model_path = Path(model_path)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        # Download model if it doesn't exist
+        if not self.model_path.exists():
+            print(f"Model not found at {self.model_path}")
+            print("Downloading from Google Drive...")
+            
+            # Google Drive file ID from the URL
+            file_id = "1w-55rSswB74tAsFwsv1xxdCXl0qNgV25"
+            
+            success = download_model_from_gdrive(file_id, str(self.model_path))
+            if not success:
+                print("Failed to download model. Using ImageNet weights only.")
+        
         self.model = self._load_model()
         
     def _load_model(self) -> nn.Module:
@@ -248,111 +341,102 @@ class CLAHEDatasetWithMaskGeneration(Dataset):
         return len(self.samples)
     
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Get preprocessed image and labels"""
         sample = self.samples[idx]
+        image_name = sample['image_name']
+        processed_path = self.get_processed_image_path(image_name)
         
         # Check if processed image exists
-        processed_path = self.get_processed_image_path(sample['image_name'])
-        
-        if processed_path.exists():
-            # Load preprocessed image
-            enhanced_image = cv2.imread(str(processed_path))
-            enhanced_image = cv2.cvtColor(enhanced_image, cv2.COLOR_BGR2RGB)
-        else:
-            # Load original image
+        if not processed_path.exists():
+            # Load and process original image
             image = cv2.imread(str(sample['image_path']))
             if image is None:
                 raise ValueError(f"Could not load image: {sample['image_path']}")
             
-            # Resize image
-            image = cv2.resize(image, (self.img_size, self.img_size))
-            
-            # Apply CLAHE enhancement
+            # Apply CLAHE
             enhanced_image = self.apply_clahe(image, sample['clahe_params'])
             
-            # Generate and apply mask if opacity > 0
-            if self.mask_opacity > 0.0:
-                mask = self.mask_generator.generate_mask(enhanced_image)
-                enhanced_image = self.apply_mask_overlay(enhanced_image, mask, self.mask_opacity)
+            # Generate mask
+            mask = self.mask_generator.generate_mask(enhanced_image)
             
-            # Convert to RGB
-            enhanced_image = cv2.cvtColor(enhanced_image, cv2.COLOR_BGR2RGB)
+            # Apply mask overlay
+            final_image = self.apply_mask_overlay(enhanced_image, mask, self.mask_opacity)
             
-            # Save processed image for reuse within epoch
-            cv2.imwrite(str(processed_path), cv2.cvtColor(enhanced_image, cv2.COLOR_RGB2BGR))
-        
-        # Convert to PIL for transforms
-        pil_image = Image.fromarray(enhanced_image)
-        
-        # Apply additional transforms
-        if self.transform:
-            pil_image = self.transform(pil_image)
+            # Resize to target size
+            final_image = cv2.resize(final_image, (self.img_size, self.img_size))
+            
+            # Save processed image
+            cv2.imwrite(str(processed_path), final_image)
         else:
-            # Default transform: to tensor and normalize
-            transform = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
-            pil_image = transform(pil_image)
+            # Load processed image
+            final_image = cv2.imread(str(processed_path))
+            if final_image is None:
+                raise ValueError(f"Could not load processed image: {processed_path}")
         
-        # Create multi-label target
-        target = torch.tensor([
+        # Convert to RGB and normalize
+        final_image = cv2.cvtColor(final_image, cv2.COLOR_BGR2RGB)
+        final_image = final_image.astype(np.float32) / 255.0
+        
+        # Convert to tensor
+        image_tensor = torch.from_numpy(final_image).permute(2, 0, 1)
+        
+        # Apply additional transforms if provided
+        if self.transform:
+            image_tensor = self.transform(image_tensor)
+        
+        # Create label tensor
+        label_tensor = torch.FloatTensor([
             sample['label']['damage'],
             sample['label']['occlusion'],
             sample['label']['crop']
-        ], dtype=torch.float32)
+        ])
         
-        return pil_image, target
+        return image_tensor, label_tensor
     
     def cleanup_temp_data(self):
         """Clean up temporary preprocessing data"""
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
             self.temp_dir.mkdir(exist_ok=True)
-            print(f"✓ Cleaned up temp directory: {self.temp_dir}")
     
     def get_sample_info(self, idx: int) -> Dict:
         """Get sample information for debugging"""
         sample = self.samples[idx]
         return {
-            'image_path': str(sample['image_path']),
             'image_name': sample['image_name'],
-            'clahe_params': sample['clahe_params'],
-            'label': sample['label']
+            'image_path': str(sample['image_path']),
+            'label': sample['label'],
+            'clahe_params': sample['clahe_params']
         }
 
 
 class RoadDistressModelF(nn.Module):
-    """Model F: CLAHE + Partial Mask Integration for Road Distress Classification"""
+    """Road distress classification model with EfficientNet backbone"""
     
     def __init__(self, num_classes=3, backbone='efficientnet-b3'):
         super(RoadDistressModelF, self).__init__()
         
-        # Use EfficientNet backbone
+        # Load backbone
         if backbone == 'efficientnet-b3':
-            self.backbone = models.efficientnet_b3(pretrained=True)
-            # Get the feature dimension from the original classifier
-            backbone_features = self.backbone.classifier[1].in_features
-            # Remove the final classification layer
+            self.backbone = models.efficientnet_b3(weights='IMAGENET1K_V1')
+            in_features = self.backbone.classifier[1].in_features
             self.backbone.classifier = nn.Identity()
         elif backbone == 'resnet50':
-            self.backbone = models.resnet50(pretrained=True)
-            backbone_features = self.backbone.fc.in_features
+            self.backbone = models.resnet50(weights='IMAGENET1K_V1')
+            in_features = self.backbone.fc.in_features
             self.backbone.fc = nn.Identity()
         else:
             raise ValueError(f"Unsupported backbone: {backbone}")
         
-        # Enhanced classifier head for multi-label classification
+        # Classification head
         self.classifier = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Flatten(),
-            nn.Linear(backbone_features, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(inplace=True),
             nn.Dropout(0.3),
+            nn.Linear(in_features, 512),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Dropout(0.2),
             nn.Linear(256, num_classes)
         )
         
@@ -366,9 +450,6 @@ class RoadDistressModelF(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm1d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
     
     def forward(self, x):
         features = self.backbone(x)
@@ -377,7 +458,7 @@ class RoadDistressModelF(nn.Module):
 
 
 class ModelFTrainer:
-    """Trainer for Model F with integrated preprocessing and cleanup"""
+    """Model F trainer with integrated preprocessing and enhanced logging"""
     
     def __init__(
         self,
@@ -392,68 +473,100 @@ class ModelFTrainer:
         output_dir: str = 'experiments/model_f'
     ):
         self.model = model.to(device)
+        self.device = device
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
-        self.device = device
         self.batch_size = batch_size
-        self.num_workers = num_workers
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Create data loaders
+        # Data loaders
         self.train_loader = DataLoader(
-            train_dataset,
-            batch_size=batch_size,
-            shuffle=True,
+            train_dataset, 
+            batch_size=batch_size, 
+            shuffle=True, 
             num_workers=num_workers,
             pin_memory=True
         )
         
         self.val_loader = DataLoader(
-            val_dataset,
-            batch_size=batch_size,
-            shuffle=False,
+            val_dataset, 
+            batch_size=batch_size, 
+            shuffle=False, 
             num_workers=num_workers,
             pin_memory=True
         )
         
-        # Loss function for multi-label classification
-        self.criterion = nn.BCEWithLogitsLoss()
-        
-        # Optimizer
+        # Optimizer and scheduler
         self.optimizer = optim.AdamW(
             self.model.parameters(),
             lr=learning_rate,
             weight_decay=weight_decay
         )
         
-        # Learning rate scheduler
         self.scheduler = optim.lr_scheduler.OneCycleLR(
             self.optimizer,
             max_lr=learning_rate,
-            epochs=50,  # Will be set properly during training
+            epochs=50,  # Will be updated in train()
             steps_per_epoch=len(self.train_loader),
             pct_start=0.3
         )
         
-        # Tensorboard writer
-        self.writer = SummaryWriter(self.output_dir / 'tensorboard')
+        # Loss function
+        self.criterion = nn.BCEWithLogitsLoss()
         
-        # Training state
-        self.best_val_accuracy = 0.0
+        # Tracking
         self.train_losses = []
         self.val_losses = []
         self.val_accuracies = []
+        
+        # TensorBoard
+        self.writer = SummaryWriter(log_dir=self.output_dir / 'tensorboard')
+        
+        # Enhanced logging
+        self.batch_logs = []
+        self.epoch_start_time = None
+        self.batch_start_time = None
+        
+        print(f"ModelFTrainer initialized:")
+        print(f"  Device: {device}")
+        print(f"  Batch size: {batch_size}")
+        print(f"  Train batches: {len(self.train_loader)}")
+        print(f"  Val batches: {len(self.val_loader)}")
+        print(f"  Output directory: {self.output_dir}")
+    
+    def log_system_stats(self, step: int, phase: str):
+        """Log system statistics"""
+        if torch.cuda.is_available():
+            gpu_memory = torch.cuda.max_memory_allocated() / 1024**3  # GB
+            gpu_memory_reserved = torch.cuda.max_memory_reserved() / 1024**3  # GB
+            self.writer.add_scalar(f'System/GPU_Memory_Allocated_{phase}', gpu_memory, step)
+            self.writer.add_scalar(f'System/GPU_Memory_Reserved_{phase}', gpu_memory_reserved, step)
+        
+        # CPU and RAM usage
+        cpu_percent = psutil.cpu_percent()
+        ram_percent = psutil.virtual_memory().percent
+        self.writer.add_scalar(f'System/CPU_Usage_{phase}', cpu_percent, step)
+        self.writer.add_scalar(f'System/RAM_Usage_{phase}', ram_percent, step)
     
     def train_epoch(self, epoch: int) -> float:
-        """Train for one epoch"""
+        """Train for one epoch with enhanced logging"""
         self.model.train()
         total_loss = 0.0
         num_batches = len(self.train_loader)
+        batch_losses = []
+        
+        # Reset GPU memory stats
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
+        
+        self.epoch_start_time = time.time()
         
         progress_bar = tqdm(self.train_loader, desc=f'Epoch {epoch+1} [Train]')
         
         for batch_idx, (images, targets) in enumerate(progress_bar):
+            self.batch_start_time = time.time()
+            
             images = images.to(self.device)
             targets = targets.to(self.device)
             
@@ -468,39 +581,116 @@ class ModelFTrainer:
             self.optimizer.step()
             self.scheduler.step()
             
-            total_loss += loss.item()
+            batch_loss = loss.item()
+            total_loss += batch_loss
+            batch_losses.append(batch_loss)
+            
+            # Calculate batch metrics
+            with torch.no_grad():
+                predictions = torch.sigmoid(outputs) > 0.5
+                batch_accuracy = (predictions == targets).float().mean().item()
+            
+            # Batch timing
+            batch_time = time.time() - self.batch_start_time
+            
+            # Enhanced logging every 10 batches
+            if batch_idx % 10 == 0:
+                global_step = epoch * num_batches + batch_idx
+                
+                # Log batch metrics
+                self.writer.add_scalar('Batch/Loss', batch_loss, global_step)
+                self.writer.add_scalar('Batch/Accuracy', batch_accuracy, global_step)
+                self.writer.add_scalar('Batch/Learning_Rate', self.scheduler.get_last_lr()[0], global_step)
+                self.writer.add_scalar('Batch/Time', batch_time, global_step)
+                
+                # Log system stats
+                self.log_system_stats(global_step, 'train')
+                
+                # Log gradient norms
+                total_norm = 0
+                for p in self.model.parameters():
+                    if p.grad is not None:
+                        param_norm = p.grad.data.norm(2)
+                        total_norm += param_norm.item() ** 2
+                total_norm = total_norm ** (1. / 2)
+                self.writer.add_scalar('Batch/Gradient_Norm', total_norm, global_step)
+                
+                # Store batch log
+                batch_log = {
+                    'epoch': epoch,
+                    'batch': batch_idx,
+                    'loss': batch_loss,
+                    'accuracy': batch_accuracy,
+                    'lr': self.scheduler.get_last_lr()[0],
+                    'time': batch_time,
+                    'gradient_norm': total_norm
+                }
+                self.batch_logs.append(batch_log)
+                
+                # Print detailed batch info every 50 batches
+                if batch_idx % 50 == 0:
+                    print(f"  Batch {batch_idx:4d}/{num_batches}: Loss={batch_loss:.4f}, "
+                          f"Acc={batch_accuracy:.4f}, LR={self.scheduler.get_last_lr()[0]:.2e}, "
+                          f"Time={batch_time:.2f}s, GradNorm={total_norm:.4f}")
             
             # Update progress bar
             progress_bar.set_postfix({
-                'Loss': f'{loss.item():.4f}',
+                'Loss': f'{batch_loss:.4f}',
                 'Avg Loss': f'{total_loss/(batch_idx+1):.4f}',
-                'LR': f'{self.scheduler.get_last_lr()[0]:.2e}'
+                'Acc': f'{batch_accuracy:.4f}',
+                'LR': f'{self.scheduler.get_last_lr()[0]:.2e}',
+                'Time': f'{batch_time:.2f}s'
             })
         
         avg_loss = total_loss / num_batches
+        epoch_time = time.time() - self.epoch_start_time
+        
+        # Log epoch-level training metrics
+        self.writer.add_scalar('Epoch/Train_Loss', avg_loss, epoch)
+        self.writer.add_scalar('Epoch/Train_Time', epoch_time, epoch)
+        self.writer.add_scalar('Epoch/Train_Loss_Std', np.std(batch_losses), epoch)
+        
+        print(f"  Training completed in {epoch_time:.2f}s, Avg Loss: {avg_loss:.4f}")
+        
         return avg_loss
     
     def validate(self, epoch: int) -> tuple:
-        """Validate the model"""
+        """Validate the model with enhanced logging"""
         self.model.eval()
         total_loss = 0.0
         all_predictions = []
         all_targets = []
+        batch_losses = []
+        batch_accuracies = []
+        
+        val_start_time = time.time()
         
         with torch.no_grad():
-            for images, targets in tqdm(self.val_loader, desc=f'Epoch {epoch+1} [Val]'):
+            for batch_idx, (images, targets) in enumerate(tqdm(self.val_loader, desc=f'Epoch {epoch+1} [Val]')):
                 images = images.to(self.device)
                 targets = targets.to(self.device)
                 
                 outputs = self.model(images)
                 loss = self.criterion(outputs, targets)
-                total_loss += loss.item()
+                batch_loss = loss.item()
+                total_loss += batch_loss
+                batch_losses.append(batch_loss)
                 
                 # Convert to binary predictions
                 predictions = torch.sigmoid(outputs) > 0.5
+                batch_accuracy = (predictions == targets).float().mean().item()
+                batch_accuracies.append(batch_accuracy)
                 
                 all_predictions.append(predictions.cpu().numpy())
                 all_targets.append(targets.cpu().numpy())
+                
+                # Log batch validation metrics every 20 batches
+                if batch_idx % 20 == 0:
+                    val_global_step = epoch * len(self.val_loader) + batch_idx
+                    self.writer.add_scalar('Val_Batch/Loss', batch_loss, val_global_step)
+                    self.writer.add_scalar('Val_Batch/Accuracy', batch_accuracy, val_global_step)
+        
+        val_time = time.time() - val_start_time
         
         # Calculate metrics
         all_predictions = np.vstack(all_predictions)
@@ -520,6 +710,15 @@ class ModelFTrainer:
         overall_accuracy = accuracy_score(all_targets.flatten(), all_predictions.flatten())
         avg_loss = total_loss / len(self.val_loader)
         
+        # Log validation epoch metrics
+        self.writer.add_scalar('Epoch/Val_Loss', avg_loss, epoch)
+        self.writer.add_scalar('Epoch/Val_Accuracy', overall_accuracy, epoch)
+        self.writer.add_scalar('Epoch/Val_Time', val_time, epoch)
+        self.writer.add_scalar('Epoch/Val_Loss_Std', np.std(batch_losses), epoch)
+        self.writer.add_scalar('Epoch/Val_Accuracy_Std', np.std(batch_accuracies), epoch)
+        
+        print(f"  Validation completed in {val_time:.2f}s, Avg Loss: {avg_loss:.4f}, Accuracy: {overall_accuracy:.4f}")
+        
         return avg_loss, overall_accuracy, metrics
     
     def save_checkpoint(self, epoch: int, val_accuracy: float, is_best: bool = False):
@@ -532,7 +731,8 @@ class ModelFTrainer:
             'val_accuracy': val_accuracy,
             'train_losses': self.train_losses,
             'val_losses': self.val_losses,
-            'val_accuracies': self.val_accuracies
+            'val_accuracies': self.val_accuracies,
+            'batch_logs': self.batch_logs
         }
         
         # Save latest checkpoint
@@ -544,18 +744,30 @@ class ModelFTrainer:
             best_path = self.output_dir / 'best_model.pth'
             torch.save(checkpoint, best_path)
             print(f"New best model saved! Val Accuracy: {val_accuracy:.4f}")
+        
+        # Save batch logs separately for analysis
+        batch_logs_path = self.output_dir / f'batch_logs_epoch_{epoch}.json'
+        with open(batch_logs_path, 'w') as f:
+            json.dump(self.batch_logs, f, indent=2)
     
     def cleanup_between_epochs(self):
         """Clean up preprocessing data between epochs"""
         print("Cleaning up preprocessing data...")
         self.train_dataset.cleanup_temp_data()
         self.val_dataset.cleanup_temp_data()
+        
+        # Force garbage collection
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        
         print("✓ Preprocessing data cleaned up")
     
     def train(self, num_epochs: int = 50, early_stopping_patience: int = 10):
-        """Complete training loop with preprocessing cleanup"""
-        print(f"Starting Model F training with integrated preprocessing...")
+        """Complete training loop with preprocessing cleanup and enhanced logging"""
+        print(f"Starting Model F training with integrated preprocessing and enhanced logging...")
         print(f"Output directory: {self.output_dir}")
+        print(f"Mask opacity: {self.train_dataset.mask_opacity}")
         
         # Update scheduler epochs
         self.scheduler = optim.lr_scheduler.OneCycleLR(
@@ -568,9 +780,11 @@ class ModelFTrainer:
         
         best_val_accuracy = 0.0
         patience_counter = 0
+        training_start_time = time.time()
         
         for epoch in range(num_epochs):
             print(f"\n=== Epoch {epoch+1}/{num_epochs} ===")
+            print(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             
             # Training
             train_loss = self.train_epoch(epoch)
@@ -597,19 +811,26 @@ class ModelFTrainer:
             # Print per-class metrics
             for class_name in ['damage', 'occlusion', 'crop']:
                 acc = class_metrics[f'{class_name}_accuracy']
+                prec = class_metrics[f'{class_name}_precision']
+                rec = class_metrics[f'{class_name}_recall']
                 f1 = class_metrics[f'{class_name}_f1']
-                print(f"  {class_name.capitalize()}: Acc={acc:.4f}, F1={f1:.4f}")
+                print(f"  {class_name.capitalize()}: Acc={acc:.4f}, Prec={prec:.4f}, Rec={rec:.4f}, F1={f1:.4f}")
             
             # Check for best model
             is_best = val_accuracy > best_val_accuracy
             if is_best:
                 best_val_accuracy = val_accuracy
                 patience_counter = 0
+                print(f"  ✓ New best accuracy: {best_val_accuracy:.4f}")
             else:
                 patience_counter += 1
+                print(f"  No improvement ({patience_counter}/{early_stopping_patience})")
             
             # Save checkpoint
             self.save_checkpoint(epoch, val_accuracy, is_best)
+            
+            # Log system stats at epoch level
+            self.log_system_stats(epoch, 'epoch')
             
             # Clean up preprocessing data between epochs
             self.cleanup_between_epochs()
@@ -619,21 +840,32 @@ class ModelFTrainer:
                 print(f"\nEarly stopping after {epoch+1} epochs (patience: {early_stopping_patience})")
                 break
         
+        total_training_time = time.time() - training_start_time
+        
         print(f"\nTraining completed!")
+        print(f"Total training time: {total_training_time:.2f} seconds ({total_training_time/3600:.2f} hours)")
         print(f"Best validation accuracy: {best_val_accuracy:.4f}")
         
-        # Save training summary
+        # Save comprehensive training summary
         summary = {
             'model_type': 'Model F (CLAHE + Partial Masks + Integrated Preprocessing)',
+            'mask_opacity': self.train_dataset.mask_opacity,
             'best_val_accuracy': float(best_val_accuracy),
             'total_epochs': epoch + 1,
             'final_train_loss': float(self.train_losses[-1]),
             'final_val_loss': float(self.val_losses[-1]),
-            'training_completed': datetime.now().isoformat()
+            'total_training_time': total_training_time,
+            'training_completed': datetime.now().isoformat(),
+            'total_batches_processed': len(self.batch_logs),
+            'final_class_metrics': {k: float(v) for k, v in class_metrics.items()}
         }
         
         with open(self.output_dir / 'training_summary.json', 'w') as f:
             json.dump(summary, f, indent=2)
+        
+        # Save complete batch logs
+        with open(self.output_dir / 'complete_batch_logs.json', 'w') as f:
+            json.dump(self.batch_logs, f, indent=2)
         
         self.writer.close()
         
@@ -648,7 +880,7 @@ def main():
     parser.add_argument('--train-labels', required=True, help='Training labels CSV')
     parser.add_argument('--val-labels', required=True, help='Validation labels CSV')
     parser.add_argument('--clahe-params', required=True, help='CLAHE parameters JSON')
-    parser.add_argument('--mask-model', default='experiments/2025-06-28_smart_split_training/../../checkpoints/best_model.pth', help='Road segmentation model path')
+    parser.add_argument('--mask-model', default='checkpoints/best_model.pth', help='Road segmentation model path')
     parser.add_argument('--output-dir', default='experiments/model_f', help='Output directory')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size')
     parser.add_argument('--epochs', type=int, default=50, help='Number of epochs')
@@ -704,8 +936,10 @@ def main():
     )
     
     # Start training
-    trainer.train(num_epochs=args.epochs, early_stopping_patience=10)
+    trainer.train(num_epochs=args.epochs)
+    
+    print("Training completed successfully!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main() 
