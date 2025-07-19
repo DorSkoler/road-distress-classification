@@ -27,7 +27,7 @@ model:
 # Dataset Configuration
 dataset:
   # Use forward slashes - will be converted to platform-appropriate paths
-  coryell_path: "../../coryell"  # Path to raw coryell data
+  coryell_path: "../../data/coryell"  # Path to raw coryell data
   image_size: [256, 256]
   batch_size: 32
   num_workers: 4

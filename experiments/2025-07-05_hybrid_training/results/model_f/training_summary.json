@@ -1,0 +1,116 @@
+{
+  "variant": "model_f",
+  "config": {
+    "experiment": {
+      "name": "model_f_clahe_partial_masks",
+      "description": "Model F: CLAHE enhanced images with partial road masking (0.5 opacity)",
+      "version": "1.0",
+      "model_variant": "model_f"
+    },
+    "model": {
+      "variant": "model_f",
+      "num_classes": 3,
+      "encoder_name": "efficientnet_b3",
+      "encoder_weights": "imagenet",
+      "use_masks": true,
+      "mask_weight": 0.5,
+      "use_clahe": true,
+      "use_augmentation": false,
+      "classifier": {
+        "dropout_rate": 0.5
+      }
+    },
+    "dataset": {
+      "coryell_path": "../../data/coryell",
+      "image_size": [
+        256,
+        256
+      ],
+      "batch_size": 32,
+      "num_workers": 4,
+      "pin_memory": true,
+      "num_classes": 3,
+      "clahe": {
+        "enabled": true,
+        "params_file": "clahe_params.json",
+        "default_clip_limit": 3.0,
+        "default_tile_grid": [
+          8,
+          8
+        ]
+      },
+      "augmentation": {
+        "enabled": false
+      },
+      "masking": {
+        "enabled": true,
+        "weight": 0.5
+      }
+    },
+    "training": {
+      "batch_size": 32,
+      "num_epochs": 50,
+      "learning_rate": "1e-3",
+      "weight_decay": "1e-4",
+      "loss": {
+        "type": "bce_with_logits",
+        "label_smoothing": 0.0
+      },
+      "early_stopping": {
+        "patience": 10,
+        "monitor": "val_accuracy"
+      },
+      "mixed_precision": {
+        "enabled": true
+      }
+    },
+    "optimizer": {
+      "type": "adamw",
+      "lr": "1e-3",
+      "weight_decay": "1e-4"
+    },
+    "scheduler": {
+      "type": "cosine_annealing",
+      "max_lr": "1e-3",
+      "min_lr": "1e-6",
+      "warmup_epochs": 5
+    },
+    "logging": {
+      "tensorboard": true,
+      "save_frequency": 5,
+      "log_frequency": 100
+    }
+  },
+  "training_results": {
+    "best_metric": 0.4457191933372396,
+    "best_epoch": 3,
+    "total_epochs": 14,
+    "total_time_hours": 0.24364932152960037,
+    "final_train_loss": 0.44229335453678087,
+    "final_val_loss": 0.409283491897217
+  },
+  "best_metrics": {
+    "damage_precision": 0.434819897084048,
+    "damage_recall": 0.5614617940199336,
+    "damage_f1": 0.4900918318028033,
+    "damage_accuracy": 0.7101648351648352,
+    "occlusion_precision": 0.8477157360406091,
+    "occlusion_recall": 0.5921985815602837,
+    "occlusion_f1": 0.697286012526096,
+    "occlusion_accuracy": 0.8804945054945055,
+    "crop_precision": 0.08817427385892117,
+    "crop_recall": 0.49707602339181284,
+    "crop_f1": 0.14977973568281938,
+    "crop_accuracy": 0.7348901098901099,
+    "overall_accuracy": 0.7751831412315369,
+    "weighted_f1": 0.4457191933372396,
+    "f1_macro": 0.4457191933372396,
+    "precision_macro": 0.4569033023278594,
+    "recall_macro": 0.5502454663240101
+  },
+  "platform_info": {
+    "platform": "windows",
+    "device": "cuda",
+    "timestamp": "2025-07-18T21:44:11.283840"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "variant": "model_e",
+  "config": {
+    "experiment": {
+      "name": "model_e_clahe_full_masks",
+      "description": "Model E: CLAHE enhanced images with full road masking (1.0 opacity)",
+      "version": "1.0",
+      "model_variant": "model_e"
+    },
+    "model": {
+      "variant": "model_e",
+      "num_classes": 3,
+      "encoder_name": "efficientnet_b3",
+      "encoder_weights": "imagenet",
+      "use_masks": true,
+      "mask_weight": 1.0,
+      "use_clahe": true,
+      "use_augmentation": false,
+      "classifier": {
+        "dropout_rate": 0.5
+      }
+    },
+    "dataset": {
+      "coryell_path": "../../data/coryell",
+      "image_size": [
+        256,
+        256
+      ],
+      "batch_size": 32,
+      "num_workers": 4,
+      "pin_memory": true,
+      "num_classes": 3,
+      "clahe": {
+        "enabled": true,
+        "params_file": "clahe_params.json",
+        "default_clip_limit": 3.0,
+        "default_tile_grid": [
+          8,
+          8
+        ]
+      },
+      "augmentation": {
+        "enabled": false
+      },
+      "masking": {
+        "enabled": true,
+        "weight": 1.0
+      }
+    },
+    "training": {
+      "batch_size": 32,
+      "num_epochs": 50,
+      "learning_rate": "1e-3",
+      "weight_decay": "1e-4",
+      "loss": {
+        "type": "bce_with_logits",
+        "label_smoothing": 0.0
+      },
+      "early_stopping": {
+        "patience": 10,
+        "monitor": "val_accuracy"
+      },
+      "mixed_precision": {
+        "enabled": true
+      }
+    },
+    "optimizer": {
+      "type": "adamw",
+      "lr": "1e-3",
+      "weight_decay": "1e-4"
+    },
+    "scheduler": {
+      "type": "cosine_annealing",
+      "max_lr": "1e-3",
+      "min_lr": "1e-6",
+      "warmup_epochs": 5
+    },
+    "logging": {
+      "tensorboard": true,
+      "save_frequency": 5,
+      "log_frequency": 100
+    }
+  },
+  "training_results": {
+    "best_metric": 0.3899773777314461,
+    "best_epoch": 1,
+    "total_epochs": 12,
+    "total_time_hours": 0.2118244198958079,
+    "final_train_loss": 0.5436551446788821,
+    "final_val_loss": 0.33441835595294833
+  },
+  "best_metrics": {
+    "damage_precision": 0.32061068702290074,
+    "damage_recall": 0.8837209302325582,
+    "damage_f1": 0.47051886792452824,
+    "damage_accuracy": 0.5065934065934066,
+    "occlusion_precision": 0.4832740213523132,
+    "occlusion_recall": 0.8026004728132388,
+    "occlusion_f1": 0.6032874278098622,
+    "occlusion_accuracy": 0.7546703296703297,
+    "crop_precision": 0.050582464745554875,
+    "crop_recall": 0.9649122807017544,
+    "crop_f1": 0.09612583745994756,
+    "crop_accuracy": 0.14752747252747253,
+    "overall_accuracy": 0.46959707140922546,
+    "weighted_f1": 0.3899773777314461,
+    "f1_macro": 0.3899773777314461,
+    "precision_macro": 0.28482239104025625,
+    "recall_macro": 0.8837445612491838
+  },
+  "platform_info": {
+    "platform": "windows",
+    "device": "cuda",
+    "timestamp": "2025-07-18T21:29:23.976460"
+  }
+}
