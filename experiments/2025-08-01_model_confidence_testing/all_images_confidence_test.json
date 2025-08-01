@@ -1,0 +1,1613 @@
+{
+  "test_summary": {
+    "total_images_attempted": 50,
+    "successful_tests": 50,
+    "models_tested": [
+      "Model_B",
+      "Model_H"
+    ]
+  },
+  "results": [
+    {
+      "image_index": 0,
+      "image_path": "../../coryell/Co Rd 342/img/000_31.296905_-97.543646.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/000_31.296905_-97.543646.png",
+        "damage": true,
+        "occlusion": false,
+        "crop": true
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.013255762867629528,
+          "occlusion_confidence": 0.1488153338432312,
+          "crop_confidence": 0.3233569860458374,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.4389893412590027,
+          "occlusion_confidence": 0.013120616786181927,
+          "crop_confidence": 0.04103996232151985,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 1,
+      "image_path": "../../coryell/Co Rd 342/img/001_31.296954_-97.543848.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/001_31.296954_-97.543848.png",
+        "damage": true,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.1226007342338562,
+          "occlusion_confidence": 0.06278564035892487,
+          "crop_confidence": 0.019917476922273636,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.7817060351371765,
+          "occlusion_confidence": 0.17068393528461456,
+          "crop_confidence": 0.3665434718132019,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 2,
+      "image_path": "../../coryell/Co Rd 342/img/002_31.296988_-97.544054.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/002_31.296988_-97.544054.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.03389967978000641,
+          "occlusion_confidence": 0.3520990014076233,
+          "crop_confidence": 0.4284382164478302,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8999496698379517,
+          "occlusion_confidence": 0.35458987951278687,
+          "crop_confidence": 0.5012387633323669,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 3,
+      "image_path": "../../coryell/Co Rd 342/img/003_31.297021_-97.544261.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/003_31.297021_-97.544261.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.1720886081457138,
+          "occlusion_confidence": 0.14318330585956573,
+          "crop_confidence": 0.24679431319236755,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.9665833711624146,
+          "occlusion_confidence": 0.21770189702510834,
+          "crop_confidence": 0.39775383472442627,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 4,
+      "image_path": "../../coryell/Co Rd 342/img/004_31.297055_-97.544467.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/004_31.297055_-97.544467.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": true
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.01260877400636673,
+          "occlusion_confidence": 0.1965857744216919,
+          "crop_confidence": 0.3023105263710022,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8218373656272888,
+          "occlusion_confidence": 0.1300472915172577,
+          "crop_confidence": 0.3161509931087494,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 5,
+      "image_path": "../../coryell/Co Rd 342/img/005_31.297089_-97.544674.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/005_31.297089_-97.544674.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": true
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.011746072210371494,
+          "occlusion_confidence": 0.09442108124494553,
+          "crop_confidence": 0.21390850841999054,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6885721683502197,
+          "occlusion_confidence": 0.03500424325466156,
+          "crop_confidence": 0.20551960170269012,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 6,
+      "image_path": "../../coryell/Co Rd 342/img/006_31.297122_-97.544880.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/006_31.297122_-97.544880.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.12246806919574738,
+          "occlusion_confidence": 0.13240140676498413,
+          "crop_confidence": 0.05987244099378586,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.42323818802833557,
+          "occlusion_confidence": 0.25786033272743225,
+          "crop_confidence": 0.6006155610084534,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 7,
+      "image_path": "../../coryell/Co Rd 342/img/007_31.297156_-97.545086.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/007_31.297156_-97.545086.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.3704575300216675,
+          "occlusion_confidence": 0.22005833685398102,
+          "crop_confidence": 0.04043442755937576,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.1881657838821411,
+          "occlusion_confidence": 0.46506163477897644,
+          "crop_confidence": 0.3890747129917145,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 8,
+      "image_path": "../../coryell/Co Rd 342/img/008_31.297190_-97.545293.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/008_31.297190_-97.545293.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.18653133511543274,
+          "occlusion_confidence": 0.20933181047439575,
+          "crop_confidence": 0.058150436729192734,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.5822268724441528,
+          "occlusion_confidence": 0.24617213010787964,
+          "crop_confidence": 0.5073643326759338,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 9,
+      "image_path": "../../coryell/Co Rd 342/img/009_31.297223_-97.545499.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/009_31.297223_-97.545499.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.10988728702068329,
+          "occlusion_confidence": 0.03470835089683533,
+          "crop_confidence": 0.05637987330555916,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8865544199943542,
+          "occlusion_confidence": 0.29745376110076904,
+          "crop_confidence": 0.7008985877037048,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 10,
+      "image_path": "../../coryell/Co Rd 342/img/010_31.297258_-97.545706.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/010_31.297258_-97.545706.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.16750720143318176,
+          "occlusion_confidence": 0.44827213883399963,
+          "crop_confidence": 0.19233845174312592,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6693416833877563,
+          "occlusion_confidence": 0.4363715350627899,
+          "crop_confidence": 0.29897254705429077,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 11,
+      "image_path": "../../coryell/Co Rd 342/img/011_31.297296_-97.545911.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/011_31.297296_-97.545911.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.2589057683944702,
+          "occlusion_confidence": 0.3625100255012512,
+          "crop_confidence": 0.10130452364683151,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.5859906673431396,
+          "occlusion_confidence": 0.4912419021129608,
+          "crop_confidence": 0.717389702796936,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 12,
+      "image_path": "../../coryell/Co Rd 342/img/012_31.297334_-97.546116.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/012_31.297334_-97.546116.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.08498270809650421,
+          "occlusion_confidence": 0.20306091010570526,
+          "crop_confidence": 0.015923621132969856,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.5843425393104553,
+          "occlusion_confidence": 0.2981927990913391,
+          "crop_confidence": 0.5757365822792053,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 13,
+      "image_path": "../../coryell/Co Rd 342/img/013_31.297372_-97.546322.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/013_31.297372_-97.546322.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.057225774973630905,
+          "occlusion_confidence": 0.1930425465106964,
+          "crop_confidence": 0.23780286312103271,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8062398433685303,
+          "occlusion_confidence": 0.2408665120601654,
+          "crop_confidence": 0.20718567073345184,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 14,
+      "image_path": "../../coryell/Co Rd 342/img/014_31.297411_-97.546527.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/014_31.297411_-97.546527.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.06917987018823624,
+          "occlusion_confidence": 0.26414236426353455,
+          "crop_confidence": 0.20528608560562134,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.3084600269794464,
+          "occlusion_confidence": 0.22356481850147247,
+          "crop_confidence": 0.3695299029350281,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 15,
+      "image_path": "../../coryell/Co Rd 342/img/015_31.297448_-97.546732.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/015_31.297448_-97.546732.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.006553610321134329,
+          "occlusion_confidence": 0.033476147800683975,
+          "crop_confidence": 0.032189369201660156,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.9741465449333191,
+          "occlusion_confidence": 0.09239988029003143,
+          "crop_confidence": 0.15846103429794312,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 16,
+      "image_path": "../../coryell/Co Rd 342/img/016_31.297483_-97.546938.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/016_31.297483_-97.546938.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.15095050632953644,
+          "occlusion_confidence": 0.2788744568824768,
+          "crop_confidence": 0.12302583456039429,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6697312593460083,
+          "occlusion_confidence": 0.5906647443771362,
+          "crop_confidence": 0.3948304057121277,
+          "predictions": {
+            "damage": true,
+            "occlusion": true,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 17,
+      "image_path": "../../coryell/Co Rd 342/img/017_31.297518_-97.547145.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/017_31.297518_-97.547145.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": true
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.004725899081677198,
+          "occlusion_confidence": 0.190964475274086,
+          "crop_confidence": 0.03871176391839981,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8414175510406494,
+          "occlusion_confidence": 0.46689561009407043,
+          "crop_confidence": 0.08670540899038315,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 18,
+      "image_path": "../../coryell/Co Rd 342/img/018_31.297553_-97.547351.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/018_31.297553_-97.547351.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.026322605088353157,
+          "occlusion_confidence": 0.599573016166687,
+          "crop_confidence": 0.039572302252054214,
+          "predictions": {
+            "damage": false,
+            "occlusion": true,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.5421648621559143,
+          "occlusion_confidence": 0.7350300550460815,
+          "crop_confidence": 0.45053404569625854,
+          "predictions": {
+            "damage": true,
+            "occlusion": true,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 19,
+      "image_path": "../../coryell/Co Rd 342/img/019_31.297588_-97.547557.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/019_31.297588_-97.547557.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.03980080783367157,
+          "occlusion_confidence": 0.23491115868091583,
+          "crop_confidence": 0.0534757636487484,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6711004376411438,
+          "occlusion_confidence": 0.2212161123752594,
+          "crop_confidence": 0.3503952920436859,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 20,
+      "image_path": "../../coryell/Co Rd 342/img/020_31.297624_-97.547763.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/020_31.297624_-97.547763.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.025118019431829453,
+          "occlusion_confidence": 0.4907247722148895,
+          "crop_confidence": 0.16328683495521545,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8496379256248474,
+          "occlusion_confidence": 0.15984344482421875,
+          "crop_confidence": 0.8773106336593628,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 21,
+      "image_path": "../../coryell/Co Rd 342/img/021_31.297672_-97.547964.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/021_31.297672_-97.547964.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.032438620924949646,
+          "occlusion_confidence": 0.3731570541858673,
+          "crop_confidence": 0.025316139683127403,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.7724602818489075,
+          "occlusion_confidence": 0.2422768771648407,
+          "crop_confidence": 0.2881892919540405,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 22,
+      "image_path": "../../coryell/Co Rd 342/img/022_31.297744_-97.548157.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/022_31.297744_-97.548157.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.020357390865683556,
+          "occlusion_confidence": 0.28731125593185425,
+          "crop_confidence": 0.117702916264534,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8249973058700562,
+          "occlusion_confidence": 0.37587472796440125,
+          "crop_confidence": 0.6432884931564331,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 23,
+      "image_path": "../../coryell/Co Rd 342/img/023_31.297817_-97.548349.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/023_31.297817_-97.548349.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.04888157173991203,
+          "occlusion_confidence": 0.3827145993709564,
+          "crop_confidence": 0.15152479708194733,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.43385493755340576,
+          "occlusion_confidence": 0.19191822409629822,
+          "crop_confidence": 0.29128965735435486,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 24,
+      "image_path": "../../coryell/Co Rd 342/img/024_31.297902_-97.548535.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/024_31.297902_-97.548535.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.05292610451579094,
+          "occlusion_confidence": 0.45398274064064026,
+          "crop_confidence": 0.06521766632795334,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.5840772390365601,
+          "occlusion_confidence": 0.5795329213142395,
+          "crop_confidence": 0.5518999099731445,
+          "predictions": {
+            "damage": true,
+            "occlusion": true,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 25,
+      "image_path": "../../coryell/Co Rd 342/img/025_31.297987_-97.548720.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/025_31.297987_-97.548720.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.14576196670532227,
+          "occlusion_confidence": 0.4707699418067932,
+          "crop_confidence": 0.07824578136205673,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6614720821380615,
+          "occlusion_confidence": 0.4682884216308594,
+          "crop_confidence": 0.7389355301856995,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 26,
+      "image_path": "../../coryell/Co Rd 342/img/026_31.298072_-97.548905.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/026_31.298072_-97.548905.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.09653963893651962,
+          "occlusion_confidence": 0.29153573513031006,
+          "crop_confidence": 0.0711502879858017,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.9076914191246033,
+          "occlusion_confidence": 0.1325737088918686,
+          "crop_confidence": 0.29922762513160706,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 27,
+      "image_path": "../../coryell/Co Rd 342/img/027_31.298157_-97.549091.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/027_31.298157_-97.549091.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.030071081593632698,
+          "occlusion_confidence": 0.13211308419704437,
+          "crop_confidence": 0.4398411512374878,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.738542377948761,
+          "occlusion_confidence": 0.49458518624305725,
+          "crop_confidence": 0.8092185854911804,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 28,
+      "image_path": "../../coryell/Co Rd 342/img/028_31.298235_-97.549280.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/028_31.298235_-97.549280.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.01896398887038231,
+          "occlusion_confidence": 0.04808827117085457,
+          "crop_confidence": 0.3928315341472626,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8976252675056458,
+          "occlusion_confidence": 0.2993377447128296,
+          "crop_confidence": 0.8487499356269836,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 29,
+      "image_path": "../../coryell/Co Rd 342/img/029_31.298313_-97.549469.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/029_31.298313_-97.549469.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.02276410348713398,
+          "occlusion_confidence": 0.12457305192947388,
+          "crop_confidence": 0.15109878778457642,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6317986249923706,
+          "occlusion_confidence": 0.2427908331155777,
+          "crop_confidence": 0.33571699261665344,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 30,
+      "image_path": "../../coryell/Co Rd 342/img/030_31.298392_-97.549658.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/030_31.298392_-97.549658.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": true
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.007771812845021486,
+          "occlusion_confidence": 0.1341770440340042,
+          "crop_confidence": 0.05665196478366852,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.5956912636756897,
+          "occlusion_confidence": 0.22781947255134583,
+          "crop_confidence": 0.2800120413303375,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 31,
+      "image_path": "../../coryell/Co Rd 342/img/031_31.298471_-97.549847.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/031_31.298471_-97.549847.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.04239504039287567,
+          "occlusion_confidence": 0.028415188193321228,
+          "crop_confidence": 0.10325231403112411,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8290395736694336,
+          "occlusion_confidence": 0.8196977972984314,
+          "crop_confidence": 0.7715000510215759,
+          "predictions": {
+            "damage": true,
+            "occlusion": true,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 32,
+      "image_path": "../../coryell/Co Rd 342/img/032_31.298552_-97.550035.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/032_31.298552_-97.550035.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.04854860529303551,
+          "occlusion_confidence": 0.15883485972881317,
+          "crop_confidence": 0.05628921091556549,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.46139779686927795,
+          "occlusion_confidence": 0.5444866418838501,
+          "crop_confidence": 0.4317355453968048,
+          "predictions": {
+            "damage": false,
+            "occlusion": true,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 33,
+      "image_path": "../../coryell/Co Rd 342/img/033_31.298632_-97.550223.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/033_31.298632_-97.550223.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.208987757563591,
+          "occlusion_confidence": 0.48381540179252625,
+          "crop_confidence": 0.022975634783506393,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.7956796884536743,
+          "occlusion_confidence": 0.676342785358429,
+          "crop_confidence": 0.5538843870162964,
+          "predictions": {
+            "damage": true,
+            "occlusion": true,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 34,
+      "image_path": "../../coryell/Co Rd 342/img/034_31.298713_-97.550411.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/034_31.298713_-97.550411.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.028836801648139954,
+          "occlusion_confidence": 0.058588359504938126,
+          "crop_confidence": 0.03492046147584915,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.4229138195514679,
+          "occlusion_confidence": 0.763181746006012,
+          "crop_confidence": 0.3514276146888733,
+          "predictions": {
+            "damage": false,
+            "occlusion": true,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 35,
+      "image_path": "../../coryell/Co Rd 342/img/035_31.298792_-97.550600.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/035_31.298792_-97.550600.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.03933657333254814,
+          "occlusion_confidence": 0.2793726325035095,
+          "crop_confidence": 0.07613693922758102,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.798328161239624,
+          "occlusion_confidence": 0.35308852791786194,
+          "crop_confidence": 0.5824856162071228,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 36,
+      "image_path": "../../coryell/Co Rd 342/img/036_31.298868_-97.550790.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/036_31.298868_-97.550790.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.07899009436368942,
+          "occlusion_confidence": 0.3925146460533142,
+          "crop_confidence": 0.07990848273038864,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8169050812721252,
+          "occlusion_confidence": 0.5517460107803345,
+          "crop_confidence": 0.3222329318523407,
+          "predictions": {
+            "damage": true,
+            "occlusion": true,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 37,
+      "image_path": "../../coryell/Co Rd 342/img/037_31.298945_-97.550981.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/037_31.298945_-97.550981.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.12457750737667084,
+          "occlusion_confidence": 0.1337447315454483,
+          "crop_confidence": 0.03469545394182205,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6764929890632629,
+          "occlusion_confidence": 0.24286292493343353,
+          "crop_confidence": 0.3350278437137604,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 38,
+      "image_path": "../../coryell/Co Rd 342/img/038_31.299017_-97.551173.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/038_31.299017_-97.551173.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.1194496676325798,
+          "occlusion_confidence": 0.3213651478290558,
+          "crop_confidence": 0.03750653564929962,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.8040969371795654,
+          "occlusion_confidence": 0.2405136525630951,
+          "crop_confidence": 0.5325146913528442,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 39,
+      "image_path": "../../coryell/Co Rd 342/img/039_31.299088_-97.551366.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/039_31.299088_-97.551366.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.017156941816210747,
+          "occlusion_confidence": 0.342000812292099,
+          "crop_confidence": 0.012576501816511154,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.7959402799606323,
+          "occlusion_confidence": 0.5233407616615295,
+          "crop_confidence": 0.5341761112213135,
+          "predictions": {
+            "damage": true,
+            "occlusion": true,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 40,
+      "image_path": "../../coryell/Co Rd 342/img/040_31.299160_-97.551559.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/040_31.299160_-97.551559.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.14879965782165527,
+          "occlusion_confidence": 0.5847237706184387,
+          "crop_confidence": 0.044381991028785706,
+          "predictions": {
+            "damage": false,
+            "occlusion": true,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.4485000669956207,
+          "occlusion_confidence": 0.2627851665019989,
+          "crop_confidence": 0.3753831088542938,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 41,
+      "image_path": "../../coryell/Co Rd 342/img/041_31.299237_-97.551749.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/041_31.299237_-97.551749.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.11906950920820236,
+          "occlusion_confidence": 0.04254632443189621,
+          "crop_confidence": 0.0077665201388299465,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.660982072353363,
+          "occlusion_confidence": 0.499988317489624,
+          "crop_confidence": 0.3850697875022888,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 42,
+      "image_path": "../../coryell/Co Rd 342/img/042_31.299317_-97.551937.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/042_31.299317_-97.551937.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.11842496693134308,
+          "occlusion_confidence": 0.06137818843126297,
+          "crop_confidence": 0.055441878736019135,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.7356752157211304,
+          "occlusion_confidence": 0.10794270038604736,
+          "crop_confidence": 0.13508398830890656,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 43,
+      "image_path": "../../coryell/Co Rd 342/img/043_31.299475_-97.552012.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/043_31.299475_-97.552012.png",
+        "damage": true,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.10214465111494064,
+          "occlusion_confidence": 0.24094665050506592,
+          "crop_confidence": 0.008517912589013577,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.7790897488594055,
+          "occlusion_confidence": 0.367179274559021,
+          "crop_confidence": 0.5179287791252136,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 44,
+      "image_path": "../../coryell/Co Rd 342/img/044_31.299651_-97.551964.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/044_31.299651_-97.551964.png",
+        "damage": false,
+        "occlusion": false,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.11736883968114853,
+          "occlusion_confidence": 0.0948408842086792,
+          "crop_confidence": 0.036832090467214584,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.5448406338691711,
+          "occlusion_confidence": 0.11993265151977539,
+          "crop_confidence": 0.49904316663742065,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 45,
+      "image_path": "../../coryell/Co Rd 342/img/045_31.299824_-97.551907.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/045_31.299824_-97.551907.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.0241679884493351,
+          "occlusion_confidence": 0.5173972249031067,
+          "crop_confidence": 0.26560238003730774,
+          "predictions": {
+            "damage": false,
+            "occlusion": true,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.6195078492164612,
+          "occlusion_confidence": 0.14369359612464905,
+          "crop_confidence": 0.5232649445533752,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 46,
+      "image_path": "../../coryell/Co Rd 342/img/046_31.299998_-97.551849.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/046_31.299998_-97.551849.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.0745777115225792,
+          "occlusion_confidence": 0.17858366668224335,
+          "crop_confidence": 0.21764631569385529,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.3473917543888092,
+          "occlusion_confidence": 0.08747458457946777,
+          "crop_confidence": 0.5292336940765381,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": true
+          }
+        }
+      }
+    },
+    {
+      "image_index": 47,
+      "image_path": "../../coryell/Co Rd 342/img/047_31.300171_-97.551792.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/047_31.300171_-97.551792.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.03327690064907074,
+          "occlusion_confidence": 0.23331283032894135,
+          "crop_confidence": 0.07520115375518799,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.38128775358200073,
+          "occlusion_confidence": 0.26508277654647827,
+          "crop_confidence": 0.2673056423664093,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 48,
+      "image_path": "../../coryell/Co Rd 342/img/048_31.300345_-97.551734.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/048_31.300345_-97.551734.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.05586836859583855,
+          "occlusion_confidence": 0.14732328057289124,
+          "crop_confidence": 0.12325825542211533,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.29930034279823303,
+          "occlusion_confidence": 0.09478279203176498,
+          "crop_confidence": 0.06413056701421738,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    },
+    {
+      "image_index": 49,
+      "image_path": "../../coryell/Co Rd 342/img/049_31.300518_-97.551676.png",
+      "ground_truth": {
+        "image_name": "Co Rd 342/img/049_31.300518_-97.551676.png",
+        "damage": false,
+        "occlusion": true,
+        "crop": false
+      },
+      "model_results": {
+        "Model_B": {
+          "damage_confidence": 0.11030812561511993,
+          "occlusion_confidence": 0.34675365686416626,
+          "crop_confidence": 0.11106593161821365,
+          "predictions": {
+            "damage": false,
+            "occlusion": false,
+            "crop": false
+          }
+        },
+        "Model_H": {
+          "damage_confidence": 0.7959818840026855,
+          "occlusion_confidence": 0.06141938269138336,
+          "crop_confidence": 0.30697116255760193,
+          "predictions": {
+            "damage": true,
+            "occlusion": false,
+            "crop": false
+          }
+        }
+      }
+    }
+  ],
+  "timestamp": "2025-08-01T15:59:21.136583"
+}

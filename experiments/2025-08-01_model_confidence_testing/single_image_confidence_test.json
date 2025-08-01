@@ -1,0 +1,32 @@
+{
+  "test_image": "../../coryell/Co Rd 342/img/000_31.296905_-97.543646.png",
+  "ground_truth": {
+    "image_name": "Co Rd 342/img/000_31.296905_-97.543646.png",
+    "damage": true,
+    "occlusion": false,
+    "crop": true
+  },
+  "model_results": {
+    "Model_B": {
+      "damage_confidence": 0.25629112124443054,
+      "occlusion_confidence": 0.3057214319705963,
+      "crop_confidence": 0.2676730453968048,
+      "predictions": {
+        "damage": false,
+        "occlusion": false,
+        "crop": false
+      }
+    },
+    "Model_H": {
+      "damage_confidence": 0.0034233855549246073,
+      "occlusion_confidence": 0.4974639415740967,
+      "crop_confidence": 0.10919450223445892,
+      "predictions": {
+        "damage": false,
+        "occlusion": false,
+        "crop": false
+      }
+    }
+  },
+  "timestamp": "2025-08-01T15:27:39.048805"
+}

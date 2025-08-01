@@ -1,0 +1,93 @@
+# Model B Configuration: Augmentation Only (No CLAHE, No Masks)
+# Based on the original model B that achieved 81.9% accuracy
+
+# Experiment Configuration
+experiment:
+  name: "model_b_augmentation_only"
+  description: "Model B: Standard images with data augmentation (no CLAHE, no masks)"
+  version: "1.0"
+  model_variant: "model_b"
+
+# Model Configuration
+model:
+  variant: "model_b"
+  num_classes: 3
+  encoder_name: "efficientnet_b3"
+  encoder_weights: "imagenet"
+  
+  # Model B specific settings (original architecture)
+  use_masks: false
+  mask_weight: 0.0
+  use_clahe: false
+  use_augmentation: true
+  
+  classifier:
+    dropout_rate: 0.5
+
+# Dataset Configuration
+dataset:
+  # Use forward slashes - will be converted to platform-appropriate paths
+  coryell_path: "../../data/coryell"  # Path to raw coryell data
+  image_size: [256, 256]
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  num_classes: 3
+  
+  # CLAHE preprocessing (disabled for Model B)
+  clahe:
+    enabled: false
+  
+  # Augmentation (enabled for Model B)
+  augmentation:
+    enabled: true
+    techniques:
+      - rotation
+      - flip
+      - brightness
+      - contrast
+  
+  # Masking (disabled for Model B)
+  masking:
+    enabled: false
+    weight: 0.0
+    
+# Training Configuration
+training:
+  batch_size: 32
+  num_epochs: 50
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  
+  # Loss configuration
+  loss:
+    type: "bce_with_logits"
+    label_smoothing: 0.1  # Slight label smoothing with augmentation
+  
+  # Early stopping
+  early_stopping:
+    patience: 10
+    monitor: "val_accuracy"
+    
+  # Mixed precision
+  mixed_precision:
+    enabled: true
+    
+# Optimizer Configuration
+optimizer:
+  type: "adamw"
+  lr: 1e-3
+  weight_decay: 1e-4
+  
+# Scheduler Configuration
+scheduler:
+  type: "cosine_annealing"
+  max_lr: 1e-3
+  min_lr: 1e-6
+  warmup_epochs: 5
+
+# Logging Configuration
+logging:
+  tensorboard: true
+  save_frequency: 5  # Save checkpoint every 5 epochs
+  log_frequency: 100  # Log metrics every 100 batches
