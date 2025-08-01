@@ -1,0 +1,168 @@
+{
+  "variant": "model_f",
+  "model_info": {
+    "training_time_hours": 0.24364932152960037,
+    "best_epoch": 3,
+    "best_val_metric": 0.4457191933372396,
+    "final_train_loss": 0.44229335453678087,
+    "final_val_loss": 0.409283491897217,
+    "config": {
+      "experiment": {
+        "name": "model_f_clahe_partial_masks",
+        "description": "Model F: CLAHE enhanced images with partial road masking (0.5 opacity)",
+        "version": "1.0",
+        "model_variant": "model_f"
+      },
+      "model": {
+        "variant": "model_f",
+        "num_classes": 3,
+        "encoder_name": "efficientnet_b3",
+        "encoder_weights": "imagenet",
+        "use_masks": true,
+        "mask_weight": 0.5,
+        "use_clahe": true,
+        "use_augmentation": false,
+        "classifier": {
+          "dropout_rate": 0.5
+        }
+      },
+      "dataset": {
+        "coryell_path": "../../data/coryell",
+        "image_size": [
+          256,
+          256
+        ],
+        "batch_size": 32,
+        "num_workers": 4,
+        "pin_memory": true,
+        "num_classes": 3,
+        "clahe": {
+          "enabled": true,
+          "params_file": "clahe_params.json",
+          "default_clip_limit": 3.0,
+          "default_tile_grid": [
+            8,
+            8
+          ]
+        },
+        "augmentation": {
+          "enabled": false
+        },
+        "masking": {
+          "enabled": true,
+          "weight": 0.5
+        }
+      },
+      "training": {
+        "batch_size": 32,
+        "num_epochs": 50,
+        "learning_rate": "1e-3",
+        "weight_decay": "1e-4",
+        "loss": {
+          "type": "bce_with_logits",
+          "label_smoothing": 0.0
+        },
+        "early_stopping": {
+          "patience": 10,
+          "monitor": "val_accuracy"
+        },
+        "mixed_precision": {
+          "enabled": true
+        }
+      },
+      "optimizer": {
+        "type": "adamw",
+        "lr": "1e-3",
+        "weight_decay": "1e-4"
+      },
+      "scheduler": {
+        "type": "cosine_annealing",
+        "max_lr": "1e-3",
+        "min_lr": "1e-6",
+        "warmup_epochs": 5
+      },
+      "logging": {
+        "tensorboard": true,
+        "save_frequency": 5,
+        "log_frequency": 100
+      }
+    },
+    "platform": {
+      "platform": "windows",
+      "device": "cuda",
+      "timestamp": "2025-07-18T21:44:11.283840"
+    }
+  },
+  "test_metrics": {
+    "damage_precision": "0.4062279",
+    "damage_recall": "0.640625",
+    "damage_f1": 0.4971849589023141,
+    "damage_accuracy": "0.6803414",
+    "damage_specificity": "0.69334793",
+    "damage_tp": 574,
+    "damage_fp": 839,
+    "damage_fn": 322,
+    "damage_tn": 1897,
+    "damage_support": 896,
+    "occlusion_precision": "0.77426636",
+    "occlusion_recall": "0.5863248",
+    "occlusion_f1": 0.6673151897676405,
+    "occlusion_accuracy": "0.905837",
+    "occlusion_specificity": "0.96718085",
+    "occlusion_tp": 343,
+    "occlusion_fp": 100,
+    "occlusion_fn": 242,
+    "occlusion_tn": 2947,
+    "occlusion_support": 585,
+    "crop_precision": "0.065398335",
+    "crop_recall": "0.34375",
+    "crop_f1": 0.1098901100902195,
+    "crop_accuracy": "0.75468063",
+    "crop_specificity": "0.7736175",
+    "crop_tp": 55,
+    "crop_fp": 786,
+    "crop_fn": 105,
+    "crop_tn": 2686,
+    "crop_support": 160,
+    "exact_match_accuracy": 0.4573237885462555,
+    "hamming_accuracy": 0.7802863436123348,
+    "macro_precision": "0.41529754",
+    "macro_recall": "0.5235666",
+    "macro_f1": 0.42479675292005803,
+    "micro_precision": "0.36040044",
+    "micro_recall": "0.59232175",
+    "micro_f1": 0.44813277452091815,
+    "weighted_precision": 0.5041985021430788,
+    "weighted_recall": 0.5923217638173821,
+    "weighted_f1": 0.520072837784874,
+    "damage_auc": 0.7463731757779866,
+    "occlusion_auc": 0.9106106889500392,
+    "crop_auc": 0.6209965437788019,
+    "damage_ap": 0.4550280890419768,
+    "occlusion_ap": 0.7294133561178023,
+    "crop_ap": 0.06824533875785833,
+    "macro_auc": 0.7593268028356093,
+    "macro_ap": 0.41756226130587915,
+    "confusion_matrices": {
+      "damage": "[[1897  839]\n [ 322  574]]",
+      "occlusion": "[[2947  100]\n [ 242  343]]",
+      "crop": "[[2686  786]\n [ 105   55]]"
+    },
+    "damage_pred_positive_rate": "0.38904184",
+    "damage_true_positive_rate": "0.24669604",
+    "occlusion_pred_positive_rate": "0.12197137",
+    "occlusion_true_positive_rate": "0.16106828",
+    "crop_pred_positive_rate": "0.23155287",
+    "crop_true_positive_rate": "0.04405286",
+    "total_samples": 3632,
+    "avg_labels_per_sample": "0.45181718",
+    "avg_predictions_per_sample": "0.7425661",
+    "label_correlations": {
+      "damage_occlusion_correlation": -0.10132489162475763,
+      "damage_crop_correlation": -0.023253264393706917,
+      "occlusion_crop_correlation": -0.0028138051593001247
+    }
+  },
+  "summary_table": "================================================================================\nMODEL EVALUATION SUMMARY\n================================================================================\nMetric                    Damage       Occlusion    Crop         Overall     \n--------------------------------------------------------------------------------\nPrecision                0.4062      0.7743      0.0654      0.4153      \nRecall                   0.6406      0.5863      0.3438      0.5236      \nF1                       0.4972      0.6673      0.1099      0.4248      \nAccuracy                 0.6803      0.9058      0.7547      0.0000      \nAUC                      0.7464      0.9106      0.6210      0.7593      \n--------------------------------------------------------------------------------\nExact Match Accuracy: 0.4573\nHamming Accuracy: 0.7803\nTotal Samples: 3632\n================================================================================",
+  "classification_report": "\n=== DAMAGE ===\n              precision    recall  f1-score   support\n\n  not_damage       0.85      0.69      0.77      2736\n      damage       0.41      0.64      0.50       896\n\n    accuracy                           0.68      3632\n   macro avg       0.63      0.67      0.63      3632\nweighted avg       0.74      0.68      0.70      3632\n\n\n=== OCCLUSION ===\n               precision    recall  f1-score   support\n\nnot_occlusion       0.92      0.97      0.95      3047\n    occlusion       0.77      0.59      0.67       585\n\n     accuracy                           0.91      3632\n    macro avg       0.85      0.78      0.81      3632\n weighted avg       0.90      0.91      0.90      3632\n\n\n=== CROP ===\n              precision    recall  f1-score   support\n\n    not_crop       0.96      0.77      0.86      3472\n        crop       0.07      0.34      0.11       160\n\n    accuracy                           0.75      3632\n   macro avg       0.51      0.56      0.48      3632\nweighted avg       0.92      0.75      0.82      3632\n"
+}

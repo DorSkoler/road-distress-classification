@@ -394,6 +394,28 @@ class ModelVariantFactory:
             encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
             encoder_weights=kwargs.get('encoder_weights', 'imagenet')
         )
+    
+    @staticmethod
+    def create_model_baseline(num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
+        """
+        Create Model Baseline: Pure baseline model
+        
+        Uses only original images with no enhancements whatsoever:
+        - No road masking (0.0 opacity)
+        - No data augmentation
+        - No CLAHE preprocessing
+        
+        This serves as the comparison baseline to demonstrate the value
+        of all other enhancements.
+        """
+        return HybridRoadDistressModel(
+            num_classes=num_classes,
+            use_masks=False,
+            mask_weight=0.0,
+            dropout_rate=kwargs.get('dropout_rate', 0.5),
+            encoder_name=kwargs.get('encoder_name', 'efficientnet_b3'),
+            encoder_weights=kwargs.get('encoder_weights', 'imagenet')
+        )
 
     @staticmethod
     def create_variant(variant_name: str, num_classes: int = 3, **kwargs) -> HybridRoadDistressModel:
@@ -417,7 +439,8 @@ class ModelVariantFactory:
             'model_e': ModelVariantFactory.create_model_e,
             'model_f': ModelVariantFactory.create_model_f,
             'model_g': ModelVariantFactory.create_model_g,
-            'model_h': ModelVariantFactory.create_model_h
+            'model_h': ModelVariantFactory.create_model_h,
+            'model_baseline': ModelVariantFactory.create_model_baseline
         }
         
         if variant_name not in variant_methods:
@@ -448,6 +471,7 @@ def create_model(variant: str = 'model_a', **kwargs) -> HybridRoadDistressModel:
         - model_f: CLAHE enhanced images + partial masks (no augmentation)
         - model_g: CLAHE enhanced images + full masks + augmentation
         - model_h: CLAHE enhanced images + partial masks + augmentation
+        - model_baseline: Pure baseline (no masks, no augmentation, no CLAHE)
     """
     return ModelVariantFactory.create_variant(variant, **kwargs)
 

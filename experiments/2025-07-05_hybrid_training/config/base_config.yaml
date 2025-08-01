@@ -235,6 +235,13 @@ variants:
     use_masks: true
     use_augmentation: true
     mask_weight: 0.5
+    
+  model_baseline:
+    name: "baseline_simple"
+    description: "Pure baseline: Original images only (no masks, no augmentation, no CLAHE)"
+    use_masks: false
+    use_augmentation: false
+    mask_weight: 0.0
 
 # System Configuration
 system:

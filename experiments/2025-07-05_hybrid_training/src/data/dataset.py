@@ -115,7 +115,8 @@ class HybridRoadDataset(Dataset):
             'model_e': {'use_augmented': False, 'use_masks': True, 'use_clahe': True},
             'model_f': {'use_augmented': False, 'use_masks': True, 'use_clahe': True},
             'model_g': {'use_augmented': True, 'use_masks': True, 'use_clahe': True},
-            'model_h': {'use_augmented': True, 'use_masks': True, 'use_clahe': True}
+            'model_h': {'use_augmented': True, 'use_masks': True, 'use_clahe': True},
+            'model_baseline': {'use_augmented': False, 'use_masks': False, 'use_clahe': False}
         }
         
         if self.variant not in variant_configs:

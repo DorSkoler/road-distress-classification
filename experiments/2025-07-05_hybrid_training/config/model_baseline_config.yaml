@@ -1,0 +1,87 @@
+# Model Baseline Configuration: Pure Baseline (No Masks, No Augmentation, No CLAHE)
+# This is the simplest possible model for comparison purposes
+
+# Experiment Configuration
+experiment:
+  name: "model_baseline_pure_simple"
+  description: "Pure baseline model: Original images only (no masks, no augmentation, no CLAHE)"
+  version: "1.0"
+  model_variant: "model_baseline"
+
+# Model Configuration
+model:
+  variant: "model_baseline"
+  num_classes: 3
+  encoder_name: "efficientnet_b3"
+  encoder_weights: "imagenet"
+  
+  # Baseline specific settings - all enhancements disabled
+  use_masks: false
+  mask_weight: 0.0
+  use_clahe: false
+  use_augmentation: false
+  
+  classifier:
+    dropout_rate: 0.5
+
+# Dataset Configuration
+dataset:
+  # Use forward slashes - will be converted to platform-appropriate paths
+  coryell_path: "../../data/coryell"  # Path to raw coryell data
+  image_size: [256, 256]
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  num_classes: 3
+  
+  # CLAHE preprocessing (disabled for baseline)
+  clahe:
+    enabled: false
+  
+  # Augmentation (disabled for baseline)
+  augmentation:
+    enabled: false
+  
+  # Masking (disabled for baseline)
+  masking:
+    enabled: false
+    weight: 0.0
+    
+# Training Configuration
+training:
+  batch_size: 32
+  num_epochs: 50
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  
+  # Loss configuration
+  loss:
+    type: "bce_with_logits"
+    label_smoothing: 0.0  # No label smoothing for baseline
+  
+  # Early stopping
+  early_stopping:
+    patience: 10
+    monitor: "val_accuracy"
+    
+  # Mixed precision
+  mixed_precision:
+    enabled: true
+    
+# Optimizer Configuration
+optimizer:
+  type: "adamw"
+  lr: 1e-3
+  weight_decay: 1e-4
+  
+# Scheduler Configuration
+scheduler:
+  type: "cosine_annealing"
+  max_lr: 1e-3
+  min_lr: 1e-6
+  warmup_epochs: 5
+
+# Logging Configuration
+logging:
+  tensorboard: true
+  save_frequency: 5  # Save checkpoint every 5 epochs

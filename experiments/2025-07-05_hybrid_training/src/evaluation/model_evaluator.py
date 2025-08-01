@@ -76,8 +76,10 @@ class ModelEvaluator:
         # Load model
         model = self._load_model(variant, model_dir, checkpoint_name)
         
-        # Create test dataset
-        test_dataset = create_dataset('test', self.config, variant)
+        # Create test dataset - CRITICAL: Force use_augmented=False for fair evaluation
+        # Test evaluation should only use original images, never augmented ones
+        logger.info(f"Creating test dataset for {variant} with use_augmented=False (evaluation best practice)")
+        test_dataset = create_dataset('test', self.config, variant, use_augmented=False)
         test_loader = DataLoader(
             test_dataset,
             batch_size=self.config['evaluation']['test_batch_size'],
@@ -87,6 +89,7 @@ class ModelEvaluator:
         )
         
         logger.info(f"Test dataset: {len(test_dataset)} samples, {len(test_loader)} batches")
+        logger.info(f"Test dataset stats - use_augmented: {test_dataset.use_augmented}, use_masks: {test_dataset.use_masks}")
         
         # Run evaluation
         predictions, labels, probabilities = self._run_inference(model, test_loader)
