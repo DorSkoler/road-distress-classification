@@ -171,6 +171,69 @@ class HybridRoadDataset(Dataset):
     
     def apply_clahe(self, image: np.ndarray, image_path: str) -> np.ndarray:
         """Apply CLAHE enhancement to image."""
+        # Check if we should use dynamic optimization during evaluation
+        use_dynamic_optimization = getattr(self, 'use_dynamic_clahe_optimization', False)
+        
+        if use_dynamic_optimization:
+            return self.apply_dynamic_clahe_optimization(image, image_path)
+        else:
+            return self.apply_precomputed_clahe(image, image_path)
+    
+    def apply_dynamic_clahe_optimization(self, image: np.ndarray, image_path: str) -> np.ndarray:
+        """Apply CLAHE using dynamic optimization for each image."""
+        try:
+            # Import here to avoid circular imports
+            import sys
+            from pathlib import Path
+            
+            # Add batch_clahe_optimization to path if not already there
+            batch_clahe_path = Path(__file__).parent.parent.parent.parent / "batch_clahe_optimization.py"
+            if batch_clahe_path.exists():
+                sys.path.insert(0, str(batch_clahe_path.parent))
+                from batch_clahe_optimization import SimpleCLAHEOptimizer
+                
+                logger.info(f"Optimizing CLAHE parameters for {Path(image_path).name}")
+                
+                # Create optimizer and find optimal parameters
+                optimizer = SimpleCLAHEOptimizer(image)
+                optimal_params = optimizer.optimize()
+                
+                # Apply optimal CLAHE parameters
+                clip_limit = optimal_params.get('clip_limit', 3.0)
+                tile_grid_size = optimal_params.get('tile_grid_size', (8, 8))
+                
+                logger.debug(f"Optimal CLAHE params for {Path(image_path).name}: "
+                           f"clip_limit={clip_limit:.2f}, tile_grid_size={tile_grid_size}")
+                
+                # Convert to LAB color space
+                lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+                l_channel = lab[:, :, 0]
+                
+                # Apply CLAHE to L channel
+                clahe = cv2.createCLAHE(
+                    clipLimit=clip_limit,
+                    tileGridSize=tile_grid_size
+                )
+                enhanced_l = clahe.apply(l_channel)
+                
+                # Reconstruct image
+                lab[:, :, 0] = enhanced_l
+                enhanced_bgr = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+                
+                return enhanced_bgr
+                
+            else:
+                logger.warning(f"batch_clahe_optimization.py not found at {batch_clahe_path}")
+                logger.warning("Falling back to precomputed CLAHE parameters")
+                return self.apply_precomputed_clahe(image, image_path)
+                
+        except Exception as e:
+            logger.error(f"Error in dynamic CLAHE optimization for {image_path}: {str(e)}")
+            logger.warning("Falling back to precomputed CLAHE parameters")
+            return self.apply_precomputed_clahe(image, image_path)
+    
+    def apply_precomputed_clahe(self, image: np.ndarray, image_path: str) -> np.ndarray:
+        """Apply CLAHE using precomputed parameters from clahe_params.json."""
         # Get CLAHE parameters for this image
         # Extract the relative path in the format expected by clahe_params.json
         path_obj = Path(image_path)

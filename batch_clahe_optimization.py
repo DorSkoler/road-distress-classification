@@ -133,16 +133,23 @@ class BatchCLAHEOptimizer:
 class SimpleCLAHEOptimizer:
     """Simplified CLAHE optimizer for batch processing"""
     
-    def __init__(self, image_path: str, clip_limits: List[float], tile_grid_sizes: List[Tuple[int, int]], fast_mode: bool = False):
-        self.image_path = image_path
-        self.clip_limits = clip_limits
-        self.tile_grid_sizes = tile_grid_sizes
-        self.fast_mode = fast_mode
+    def __init__(self, image_input, clip_limits: List[float] = None, tile_grid_sizes: List[Tuple[int, int]] = None, fast_mode: bool = False):
+        # Handle both image path (str) and image array (np.ndarray) inputs
+        if isinstance(image_input, str):
+            self.image_path = image_input
+            self.original_image = cv2.imread(image_input)
+            if self.original_image is None:
+                raise ValueError(f"Could not load image: {image_input}")
+        elif isinstance(image_input, np.ndarray):
+            self.image_path = "memory_image"
+            self.original_image = image_input.copy()
+        else:
+            raise ValueError("image_input must be either a file path (str) or numpy array")
         
-        # Load and prepare image
-        self.original_image = cv2.imread(image_path)
-        if self.original_image is None:
-            raise ValueError(f"Could not load image: {image_path}")
+        # Set default parameters if not provided
+        self.clip_limits = clip_limits or [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]
+        self.tile_grid_sizes = tile_grid_sizes or [(4, 4), (6, 6), (8, 8), (10, 10), (12, 12)]
+        self.fast_mode = fast_mode
         
         self.lab_image = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2LAB)
         self.l_channel = self.lab_image[:, :, 0]

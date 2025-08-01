@@ -208,18 +208,18 @@ class ModelConfidenceTester:
             
             # Convert BGR to RGB
             image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-            
-            # Resize to model input size
-            image_size = self.base_config['dataset']['image_size']
+        
+        # Resize to model input size
+        image_size = self.base_config['dataset']['image_size']
             image_pil = Image.fromarray(image_rgb).resize(tuple(image_size))
-            
-            # Convert to tensor and normalize
-            import torchvision.transforms as transforms
-            transform = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
-            
+        
+        # Convert to tensor and normalize
+        import torchvision.transforms as transforms
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+        
             image_tensor = transform(image_pil).unsqueeze(0).to(self.device)
             
             with torch.no_grad():
