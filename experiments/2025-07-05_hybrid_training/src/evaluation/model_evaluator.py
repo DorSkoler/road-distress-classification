@@ -99,15 +99,21 @@ class ModelEvaluator:
         test_dataset = create_dataset('test', self.config, variant, use_augmented=False)
         
         # Enable dynamic CLAHE optimization for CLAHE-trained models during evaluation
-        if use_dynamic_clahe and hasattr(test_dataset, 'use_dynamic_clahe_optimization'):
+        if use_dynamic_clahe:
             test_dataset.use_dynamic_clahe_optimization = True
             logger.info(f"Dynamic CLAHE optimization enabled for evaluation of {variant}")
+        else:
+            # Ensure the attribute exists and is False for non-CLAHE models
+            test_dataset.use_dynamic_clahe_optimization = False
+        
+        # Use no workers for evaluation to eliminate multiprocessing issues and maximize GPU utilization
+        num_workers = 0
         
         test_loader = DataLoader(
             test_dataset,
             batch_size=self.config['evaluation']['test_batch_size'],
             shuffle=False,
-            num_workers=self.platform_utils.get_num_workers(),
+            num_workers=num_workers,
             pin_memory=self.device.type == 'cuda'
         )
         
@@ -118,8 +124,16 @@ class ModelEvaluator:
             dynamic_clahe_enabled = getattr(test_dataset, 'use_dynamic_clahe_optimization', False)
             logger.info(f"Dynamic CLAHE optimization: {'ENABLED' if dynamic_clahe_enabled else 'DISABLED'}")
         
+        # Verify mask configuration for models that should use masks
+        mask_variants = ['model_a', 'model_c', 'model_d', 'model_e', 'model_f', 'model_g', 'model_h']
+        if variant in mask_variants:
+            if not test_dataset.use_masks:
+                logger.warning(f"WARNING: {variant} should use masks but use_masks=False!")
+            else:
+                logger.info(f"SUCCESS: Masks enabled for {variant}")
+        
         # Run evaluation
-        predictions, labels, probabilities = self._run_inference(model, test_loader)
+        predictions, labels, probabilities = self._run_inference(model, test_loader, variant, use_dynamic_clahe)
         
         # Calculate metrics
         metrics = self.metrics_calculator.calculate_all_metrics(

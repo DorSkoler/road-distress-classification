@@ -195,7 +195,7 @@ logging:
 
 # Evaluation Configuration
 evaluation:
-  test_batch_size: 32
+  test_batch_size: 64  # Increased for better GPU utilization during evaluation
   save_predictions: true
   save_visualizations: true
   confusion_matrix: true

@@ -241,10 +241,12 @@ class SimpleCLAHEOptimizer:
         
         orig_mean = cv2.filter2D(orig_gray.astype(np.float32), -1, kernel)
         orig_var = cv2.filter2D((orig_gray.astype(np.float32))**2, -1, kernel) - orig_mean**2
+        orig_var = np.maximum(orig_var, 0)  # Ensure non-negative values
         orig_contrast = np.mean(np.sqrt(orig_var))
         
         enh_mean = cv2.filter2D(enh_gray.astype(np.float32), -1, kernel)
         enh_var = cv2.filter2D((enh_gray.astype(np.float32))**2, -1, kernel) - enh_mean**2
+        enh_var = np.maximum(enh_var, 0)  # Ensure non-negative values
         enh_contrast = np.mean(np.sqrt(enh_var))
         
         contrast_improvement = enh_contrast / (orig_contrast + 1e-6)

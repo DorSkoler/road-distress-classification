@@ -1,0 +1,353 @@
+{
+  "variant": "model_baseline",
+  "model_info": {
+    "training_time_hours": 0,
+    "best_epoch": 0,
+    "best_val_metric": 0,
+    "final_train_loss": 0,
+    "final_val_loss": 0,
+    "config": {
+      "experiment": {
+        "name": "hybrid_training_2025_07_05",
+        "description": "Hybrid experiment combining successful data splitting from 28/06 with proven architecture from 10/05",
+        "version": "1.0",
+        "date": "2025-07-05"
+      },
+      "platform": {
+        "os": "auto",
+        "windows": {
+          "path_separator": "\\",
+          "line_ending": "\r\n",
+          "default_device": "cuda",
+          "default_workers": 8,
+          "shell_command": "powershell"
+        },
+        "mac": {
+          "path_separator": "/",
+          "line_ending": "\n",
+          "default_device": "mps",
+          "default_workers": 6,
+          "shell_command": "bash"
+        },
+        "linux": {
+          "path_separator": "/",
+          "line_ending": "\n",
+          "default_device": "cuda",
+          "default_workers": 8,
+          "shell_command": "bash"
+        }
+      },
+      "dataset": {
+        "coryell_path": "../../data/coryell",
+        "image_size": [
+          256,
+          256
+        ],
+        "batch_size": 32,
+        "num_workers": null,
+        "pin_memory": true,
+        "num_classes": 3,
+        "image_extensions": [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".PNG",
+          ".JPG",
+          ".JPEG"
+        ],
+        "annotation_extensions": [
+          ".json",
+          ".JSON"
+        ]
+      },
+      "splitting": {
+        "method": "smart_split",
+        "train_ratio": 0.6,
+        "val_ratio": 0.2,
+        "test_ratio": 0.2,
+        "preserve_road_integrity": true,
+        "balance_labels": true,
+        "min_road_images": 5
+      },
+      "model": {
+        "architecture": "efficientnet_b3_classification",
+        "backbone": "efficientnet_b3",
+        "encoder_name": "efficientnet_b3",
+        "encoder_weights": "imagenet",
+        "num_classes": 3,
+        "activation": null,
+        "classifier": {
+          "hidden_size": 128,
+          "dropout_rate": 0.5
+        },
+        "mask_integration": {
+          "full_masking_weight": 1.0,
+          "weighted_masking_weight": 0.5,
+          "no_masking_weight": 0.0
+        }
+      },
+      "training": {
+        "num_epochs": 50,
+        "learning_rate": "5e-5",
+        "weight_decay": 0.1,
+        "optimizer": "AdamW",
+        "scheduler": "ReduceLROnPlateau",
+        "scheduler_patience": 5,
+        "scheduler_factor": 0.5,
+        "gradient_clip": 1.0,
+        "mixed_precision": true,
+        "early_stopping_patience": 7,
+        "loss": {
+          "type": "bce_with_logits",
+          "label_smoothing": 0.1,
+          "class_weights": null
+        }
+      },
+      "augmentation": {
+        "enabled": true,
+        "samples_per_image": 3,
+        "output_dir": "data/augmented",
+        "geometric": {
+          "rotation": {
+            "enabled": true,
+            "range": [
+              -5,
+              5
+            ],
+            "probability": 0.3
+          },
+          "flip": {
+            "enabled": true,
+            "probability": 0.5
+          },
+          "scale": {
+            "enabled": false
+          },
+          "crop": {
+            "enabled": false
+          }
+        },
+        "color": {
+          "brightness": {
+            "enabled": true,
+            "range": [
+              -0.1,
+              0.1
+            ],
+            "probability": 0.5
+          },
+          "contrast": {
+            "enabled": true,
+            "range": [
+              -0.1,
+              0.1
+            ],
+            "probability": 0.5
+          },
+          "saturation": {
+            "enabled": false
+          },
+          "hue": {
+            "enabled": false
+          }
+        },
+        "noise": {
+          "gaussian": {
+            "enabled": true,
+            "std_range": [
+              5,
+              15
+            ],
+            "probability": 0.3
+          },
+          "salt_pepper": {
+            "enabled": false
+          }
+        }
+      },
+      "mask_generation": {
+        "model_checkpoint": "../../checkpoints/best_model.pth",
+        "confidence_threshold": 0.5,
+        "road_coverage_threshold": 0.3,
+        "min_road_pixels": 1000,
+        "output_dir": "data/masks",
+        "save_visualizations": true,
+        "dilation_kernel": 2,
+        "erosion_kernel": 1,
+        "blur_kernel": 3
+      },
+      "hardware": {
+        "device": "auto",
+        "cudnn_benchmark": true,
+        "prefetch_factor": 2,
+        "device_preferences": {
+          "windows": [
+            "cuda",
+            "cpu"
+          ],
+          "mac": [
+            "mps",
+            "cpu"
+          ],
+          "linux": [
+            "cuda",
+            "cpu"
+          ]
+        },
+        "memory": {
+          "max_memory_fraction": 0.8,
+          "allow_growth": true
+        }
+      },
+      "logging": {
+        "log_dir": "logs",
+        "tensorboard": true,
+        "save_frequency": 5,
+        "checkpoint_dir": "checkpoints",
+        "best_metric": "val_accuracy",
+        "log_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "date_format": "%Y-%m-%d %H:%M:%S",
+        "metrics": [
+          "accuracy",
+          "precision",
+          "recall",
+          "f1",
+          "loss"
+        ]
+      },
+      "evaluation": {
+        "test_batch_size": 32,
+        "save_predictions": true,
+        "save_visualizations": true,
+        "confusion_matrix": true,
+        "class_names": [
+          "not_damaged",
+          "damaged",
+          "other_issues"
+        ]
+      },
+      "variants": {
+        "model_a": {
+          "name": "pictures_plus_masks",
+          "description": "Original images + road masks (full masking)",
+          "use_masks": true,
+          "use_augmentation": false,
+          "mask_weight": 1.0
+        },
+        "model_b": {
+          "name": "pictures_plus_augmentation",
+          "description": "Original + augmented images (no masks)",
+          "use_masks": false,
+          "use_augmentation": true,
+          "mask_weight": 0.0
+        },
+        "model_c": {
+          "name": "pictures_plus_augmentation_plus_masks",
+          "description": "Original + augmented images + masks (full masking)",
+          "use_masks": true,
+          "use_augmentation": true,
+          "mask_weight": 1.0
+        },
+        "model_d": {
+          "name": "pictures_plus_augmentation_plus_weighted_masks",
+          "description": "Original + augmented images + weighted masks (50% weight to non-road)",
+          "use_masks": true,
+          "use_augmentation": true,
+          "mask_weight": 0.5
+        },
+        "model_baseline": {
+          "name": "baseline_simple",
+          "description": "Pure baseline: Original images only (no masks, no augmentation, no CLAHE)",
+          "use_masks": false,
+          "use_augmentation": false,
+          "mask_weight": 0.0
+        }
+      },
+      "system": {
+        "random_seed": 42,
+        "reproducible": true,
+        "benchmark": true,
+        "encoding": "utf-8",
+        "file_permissions": "0o755",
+        "env_vars": {
+          "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:512",
+          "OMP_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        }
+      }
+    },
+    "platform": {}
+  },
+  "test_metrics": {
+    "damage_precision": "0.6994382",
+    "damage_recall": "0.5558036",
+    "damage_f1": 0.6194029762521787,
+    "damage_accuracy": "0.8314978",
+    "damage_specificity": "0.9217836",
+    "damage_tp": 498,
+    "damage_fp": 214,
+    "damage_fn": 398,
+    "damage_tn": 2522,
+    "damage_support": 896,
+    "occlusion_precision": "0.8214286",
+    "occlusion_recall": "0.7076923",
+    "occlusion_f1": 0.7603305995110141,
+    "occlusion_accuracy": "0.9281388",
+    "occlusion_specificity": "0.97046274",
+    "occlusion_tp": 414,
+    "occlusion_fp": 90,
+    "occlusion_fn": 171,
+    "occlusion_tn": 2957,
+    "occlusion_support": 585,
+    "crop_precision": "0.96732026",
+    "crop_recall": "0.925",
+    "crop_f1": 0.9456869081193711,
+    "crop_accuracy": "0.99531937",
+    "crop_specificity": "0.9985599",
+    "crop_tp": 148,
+    "crop_fp": 5,
+    "crop_fn": 12,
+    "crop_tn": 3467,
+    "crop_support": 160,
+    "exact_match_accuracy": 0.7747797356828194,
+    "hamming_accuracy": 0.9183186490455213,
+    "macro_precision": "0.8293957",
+    "macro_recall": "0.7294986",
+    "macro_f1": 0.7751401612941878,
+    "micro_precision": "0.7742878",
+    "micro_recall": "0.6459476",
+    "micro_f1": 0.7043189342297116,
+    "weighted_precision": 0.7690454670236577,
+    "weighted_recall": 0.6459476142522405,
+    "weighted_f1": 0.7014554373765964,
+    "damage_auc": 0.8550143261800335,
+    "occlusion_auc": 0.9542242755239145,
+    "crop_auc": 0.99573732718894,
+    "damage_ap": 0.704220402412204,
+    "occlusion_ap": 0.8166254213927202,
+    "crop_ap": 0.9730398444038039,
+    "macro_auc": 0.9349919762976294,
+    "macro_ap": 0.8312952227362427,
+    "confusion_matrices": {
+      "damage": "[[2522  214]\n [ 398  498]]",
+      "occlusion": "[[2957   90]\n [ 171  414]]",
+      "crop": "[[3467    5]\n [  12  148]]"
+    },
+    "damage_pred_positive_rate": "0.19603524",
+    "damage_true_positive_rate": "0.24669604",
+    "occlusion_pred_positive_rate": "0.13876653",
+    "occlusion_true_positive_rate": "0.16106828",
+    "crop_pred_positive_rate": "0.04212555",
+    "crop_true_positive_rate": "0.04405286",
+    "total_samples": 3632,
+    "avg_labels_per_sample": "0.45181718",
+    "avg_predictions_per_sample": "0.37692732",
+    "label_correlations": {
+      "damage_occlusion_correlation": -0.10132489162475763,
+      "damage_crop_correlation": -0.023253264393706917,
+      "occlusion_crop_correlation": -0.0028138051593001247
+    }
+  },
+  "summary_table": "================================================================================\nMODEL EVALUATION SUMMARY\n================================================================================\nMetric                    Damage       Occlusion    Crop         Overall     \n--------------------------------------------------------------------------------\nPrecision                0.6994      0.8214      0.9673      0.8294      \nRecall                   0.5558      0.7077      0.9250      0.7295      \nF1                       0.6194      0.7603      0.9457      0.7751      \nAccuracy                 0.8315      0.9281      0.9953      0.0000      \nAUC                      0.8550      0.9542      0.9957      0.9350      \n--------------------------------------------------------------------------------\nExact Match Accuracy: 0.7748\nHamming Accuracy: 0.9183\nTotal Samples: 3632\n================================================================================",
+  "classification_report": "\n=== DAMAGE ===\n              precision    recall  f1-score   support\n\n  not_damage       0.86      0.92      0.89      2736\n      damage       0.70      0.56      0.62       896\n\n    accuracy                           0.83      3632\n   macro avg       0.78      0.74      0.76      3632\nweighted avg       0.82      0.83      0.82      3632\n\n\n=== OCCLUSION ===\n               precision    recall  f1-score   support\n\nnot_occlusion       0.95      0.97      0.96      3047\n    occlusion       0.82      0.71      0.76       585\n\n     accuracy                           0.93      3632\n    macro avg       0.88      0.84      0.86      3632\n weighted avg       0.93      0.93      0.93      3632\n\n\n=== CROP ===\n              precision    recall  f1-score   support\n\n    not_crop       1.00      1.00      1.00      3472\n        crop       0.97      0.93      0.95       160\n\n    accuracy                           1.00      3632\n   macro avg       0.98      0.96      0.97      3632\nweighted avg       1.00      1.00      1.00      3632\n"
+}

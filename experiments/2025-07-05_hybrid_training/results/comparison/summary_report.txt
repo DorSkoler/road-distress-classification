@@ -1,39 +1,40 @@
 ================================================================================
 COMPREHENSIVE MODEL COMPARISON REPORT
 ================================================================================
-Generated: 2025-08-01 14:56:47
+Generated: 2025-08-01 18:20:34
 
 EVALUATION SUMMARY
 ----------------------------------------
-Total models evaluated: 8
-Successful evaluations: 8
+Total models evaluated: 9
+Successful evaluations: 9
 Failed evaluations: 0
 Success rate: 100.0%
 
 BEST PERFORMING MODELS BY METRIC
 ----------------------------------------
 Macro F1: model_b (0.806)
-Macro Precision: model_c (0.808)
-Macro Recall: model_e (0.899)
+Macro Precision: model_baseline (0.829)
+Macro Recall: model_e (0.896)
 Hamming Accuracy: model_b (0.919)
 Exact Match Accuracy: model_b (0.777)
 
 MODEL RANKING (by Macro F1)
 ----------------------------------------
- Rank   Model  Macro F1  Macro Precision  Macro Recall  Hamming Accuracy  Exact Match  Damage F1  Occlusion F1  Crop F1  Training Time (h)  Best Epoch  Val Loss Ratio
-    1 model_b     0.806            0.804         0.809             0.919        0.777      0.647         0.803    0.969              1.258          21           0.955
-    2 model_d     0.789            0.778         0.801             0.916        0.774      0.644         0.800    0.924              1.408          22           0.787
-    3 model_c     0.787            0.808         0.767             0.919        0.775      0.636         0.795    0.929              1.312          20           0.748
-    4 model_h     0.779            0.788         0.772             0.907        0.743      0.607         0.770    0.959              2.994          37           0.849
-    5 model_g     0.767            0.772         0.764             0.904        0.736      0.604         0.759    0.939              3.131          49           0.858
-    6 model_f     0.425            0.415         0.524             0.780        0.457      0.497         0.667    0.110              0.244           3           0.925
-    7 model_e     0.350            0.238         0.899             0.452        0.051      0.465         0.494    0.091              0.212           1           0.615
-    8 model_a     0.344            0.258         0.818             0.445        0.037      0.417         0.530    0.086              0.147           1           0.389
+ Rank          Model  Macro F1  Macro Precision  Macro Recall  Hamming Accuracy  Exact Match  Damage F1  Occlusion F1  Crop F1  Training Time (h)  Best Epoch  Val Loss Ratio
+    1        model_b     0.806            0.804         0.809             0.919        0.777      0.647         0.803    0.969              1.258          21           0.955
+    2        model_d     0.789            0.778         0.801             0.916        0.774      0.644         0.800    0.924              1.408          22           0.787
+    3        model_c     0.787            0.808         0.767             0.919        0.775      0.636         0.795    0.929              1.312          20           0.748
+    4        model_h     0.781            0.790         0.775             0.908        0.744      0.609         0.776    0.959              2.994          37           0.849
+    5 model_baseline     0.775            0.829         0.729             0.918        0.775      0.619         0.760    0.946              0.000           0           0.000
+    6        model_g     0.768            0.776         0.762             0.906        0.742      0.614         0.756    0.935              3.131          49           0.858
+    7        model_f     0.420            0.414         0.503             0.778        0.459      0.515         0.667    0.079              0.244           3           0.925
+    8        model_e     0.349            0.238         0.896             0.452        0.057      0.461         0.494    0.092              0.212           1           0.615
+    9        model_a     0.344            0.258         0.818             0.445        0.037      0.417         0.530    0.086              0.147           1           0.389
 
 RECOMMENDATIONS
 ----------------------------------------
 Best Overall: model_b (Macro F1: 0.806)
-Most Efficient: model_a (F1/hour: 2.348)
+Most Efficient: model_baseline (F1/hour: inf)
 Best For Damage: model_b
 Best For Occlusion: model_b
 Best For Crop: model_b

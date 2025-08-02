@@ -1,0 +1,104 @@
+# Road Distress Inference Pipeline Configuration
+# Date: 2025-08-01
+
+# Multi-Model Configuration
+models:
+  # Model B: No masks, no CLAHE, augmentation only (Best performer)
+  model_b:
+    checkpoint_path: "../experiments/2025-07-05_hybrid_training/results/model_b/checkpoints/best_model.pth"
+    architecture: "efficientnet_b3"
+    num_classes: 3
+    use_masks: false
+    use_clahe: false
+    macro_f1: 0.806
+    description: "No masks, no CLAHE, augmentation only"
+    
+  # Model H: CLAHE + partial masks + augmentation
+  model_h:
+    checkpoint_path: "../experiments/2025-07-05_hybrid_training/results/model_h/checkpoints/best_model.pth"
+    architecture: "efficientnet_b3"
+    num_classes: 3
+    use_masks: true
+    mask_weight: 0.5
+    use_clahe: true
+    macro_f1: 0.781
+    description: "CLAHE + partial masks + augmentation"
+    
+  # Ensemble settings
+  ensemble:
+    enabled: true
+    default_weights: [0.5, 0.5]  # Equal weight for both models
+    
+  # Common settings
+  class_names: ["damage", "occlusion", "crop"]
+  device: "auto"  # "cuda", "cpu", or "auto"
+
+# Image Processing Configuration
+image_processing:
+  # Target size for model input (height, width)
+  target_size: [256, 256]
+  
+  # ImageNet normalization parameters
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+  
+  # Supported image formats
+  supported_formats: [".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif"]
+
+# Visualization Configuration
+visualization:
+  # Heatmap settings
+  heatmap:
+    colormap: "hot"  # matplotlib colormap name
+    alpha: 0.6       # transparency for overlay (0.0 - 1.0)
+    
+  # Text annotation settings
+  text:
+    font_size: 16
+    background_alpha: 0.8
+    
+  # Output settings
+  output_dpi: 150
+  output_quality: 95
+
+# Inference Configuration
+inference:
+  # Per-class confidence thresholds (adjustable)
+  thresholds:
+    damage: 0.5
+    occlusion: 0.5
+    crop: 0.5
+  
+  # Regional analysis settings
+  regional_analysis:
+    enabled: true
+    grid_size: [4, 4]  # rows, cols
+    
+  # Batch processing settings
+  batch:
+    max_batch_size: 32
+    parallel_workers: 4
+
+# Output Configuration
+output:
+  # Directory structure
+  create_subdirs: true
+  subdirs:
+    - "heatmaps"
+    - "visualizations" 
+    - "results"
+    
+  # File naming
+  timestamp_format: "%Y%m%d_%H%M%S"
+  
+  # Save options
+  save_json: true
+  save_visualizations: true
+  save_heatmaps: true
+  
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  save_logs: true
+  log_file: "inference.log"

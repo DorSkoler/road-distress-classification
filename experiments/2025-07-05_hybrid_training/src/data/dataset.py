@@ -186,24 +186,33 @@ class HybridRoadDataset(Dataset):
             import sys
             from pathlib import Path
             
-            # Add batch_clahe_optimization to path if not already there
-            batch_clahe_path = Path(__file__).parent.parent.parent.parent / "batch_clahe_optimization.py"
+            # Add batch_clahe_optimization to path if not already there  
+            # From src/data/dataset.py, go up to road-distress-classification/
+            batch_clahe_path = Path(__file__).parent.parent.parent.parent.parent / "batch_clahe_optimization.py"
             if batch_clahe_path.exists():
                 sys.path.insert(0, str(batch_clahe_path.parent))
                 from batch_clahe_optimization import SimpleCLAHEOptimizer
                 
-                logger.info(f"Optimizing CLAHE parameters for {Path(image_path).name}")
-                
-                # Create optimizer and find optimal parameters
-                optimizer = SimpleCLAHEOptimizer(image)
+                # Use ultra-fast optimization with reduced parameter space
+                optimizer = SimpleCLAHEOptimizer(image, fast_mode=True)
+                # Drastically reduce search space for evaluation speed
+                optimizer.clip_limits = [2.0, 3.0, 4.0]  # Only 3 values instead of 8
+                optimizer.tile_grid_sizes = [(8, 8)]     # Single tile size instead of 5
                 optimal_params = optimizer.optimize()
                 
                 # Apply optimal CLAHE parameters
                 clip_limit = optimal_params.get('clip_limit', 3.0)
                 tile_grid_size = optimal_params.get('tile_grid_size', (8, 8))
                 
-                logger.debug(f"Optimal CLAHE params for {Path(image_path).name}: "
-                           f"clip_limit={clip_limit:.2f}, tile_grid_size={tile_grid_size}")
+                # Reduced logging for performance
+                if hasattr(self, '_clahe_log_count'):
+                    self._clahe_log_count += 1
+                else:
+                    self._clahe_log_count = 1
+                
+                # Only log every 100th image to avoid spam
+                if self._clahe_log_count % 100 == 0:
+                    logger.debug(f"CLAHE processing: {self._clahe_log_count} images processed")
                 
                 # Convert to LAB color space
                 lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
@@ -451,7 +460,7 @@ class HybridRoadDataset(Dataset):
                 mask_path = self.masks_dir / self.split_name / road_name / f"{image_name}.png"
             
             if not mask_path.exists():
-                logger.debug(f"Mask not found: {mask_path}")
+                # Mask not found is normal - not every image has damage that needs masking
                 return None
             
             # Load mask
