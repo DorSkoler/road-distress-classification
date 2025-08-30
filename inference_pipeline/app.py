@@ -1038,27 +1038,27 @@ def main():
         "🔥 Damage Threshold",
         min_value=0.0,
         max_value=1.0,
-        value=0.5,
+        value=0.50,
         step=0.05,
-        help="Probability threshold for damage detection"
+        help="Probability threshold for damage detection (Balanced: P=0.54, R=0.66, Acc=0.79)"
     )
     
     occlusion_threshold = st.sidebar.slider(
         "🌿 Occlusion Threshold", 
         min_value=0.0,
         max_value=1.0,
-        value=0.5,
+        value=0.40,
         step=0.05,
-        help="Probability threshold for occlusion detection"
+        help="Probability threshold for occlusion detection (Balanced: P=0.80, R=0.75, Acc=0.93)"
     )
     
     crop_threshold = st.sidebar.slider(
         "✂️ Crop Threshold",
         min_value=0.0,
         max_value=1.0,
-        value=0.5,
+        value=0.49,
         step=0.05,
-        help="Probability threshold for crop detection"
+        help="Probability threshold for crop detection (Balanced: P=0.99, R=0.86, Acc=0.99)"
     )
     
     thresholds = {

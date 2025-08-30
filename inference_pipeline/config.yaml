@@ -63,11 +63,11 @@ visualization:
 
 # Inference Configuration
 inference:
-  # Per-class confidence thresholds (adjustable)
+  # Per-class confidence thresholds (balanced for general monitoring)
   thresholds:
-    damage: 0.5
-    occlusion: 0.5
-    crop: 0.5
+    damage: 0.50
+    occlusion: 0.40
+    crop: 0.49
   
   # Regional analysis settings
   regional_analysis:
