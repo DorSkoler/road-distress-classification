@@ -22,13 +22,21 @@ from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
+import re
+import logging
+
+# Configure logging for debugging
+logging.basicConfig(
+    level=logging.DEBUG,  # Enable debug level for detailed info
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
 # Import our pipeline components
 try:
-    from src import EnsembleInferenceEngine, HeatmapGenerator
+    from src import EnsembleInferenceEngine, HeatmapGenerator, RoadProcessor, RoadVisualizer, RoadMaskGenerator, SegmentCache
 except ImportError as e:
     st.error(f"Failed to import inference components: {e}")
     st.stop()
@@ -940,6 +948,269 @@ def process_batch_images(uploaded_files, engine, heatmap_gen, thresholds):
     
     return all_results, all_visualizations
 
+def process_road_folder(uploaded_files, engine, heatmap_gen, thresholds):
+    """Process entire road folder and display comprehensive results."""
+    
+    # Initialize processors
+    with st.spinner("Initializing components..."):
+        mask_model_path = "../checkpoints/best_model.pth"
+        mask_generator = RoadMaskGenerator(model_path=mask_model_path)
+        segment_cache = SegmentCache()
+        
+    road_processor = RoadProcessor(engine, heatmap_gen, mask_generator)
+    road_visualizer = RoadVisualizer()
+    
+    # Update engine thresholds
+    engine.update_thresholds(thresholds)
+    
+    # Process road with progress tracking
+    with st.spinner("Processing road images..."):
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        def update_progress(progress):
+            progress_bar.progress(progress)
+            status_text.text(f"Processing: {progress:.1%} complete")
+        
+        try:
+            # Process all road images
+            road_data = road_processor.process_road_images(uploaded_files, update_progress)
+            
+            # Check if we have valid data
+            if not road_data['coordinates'] or len(road_data['coordinates']) == 0:
+                progress_bar.empty()
+                status_text.empty()
+                st.error("❌ No valid GPS coordinates found!")
+                st.markdown("""
+                **Possible issues:**
+                - Filename format incorrect (should be: `XXX_latitude_longitude.ext`)
+                - Coordinates out of valid range (lat: -90 to 90, lon: -180 to 180)
+                - File names may have wrong coordinate order
+                
+                **Expected format:** `000_31.296905_-97.543646.png`
+                - First number: sequence (000)
+                - Second number: latitude (31.296905)
+                - Third number: longitude (-97.543646)
+                """)
+                return
+            
+            # Calculate road score
+            scoring_data = road_processor.calculate_road_score(road_data)
+            
+            progress_bar.empty()
+            status_text.empty()
+            
+            # Store data in session state to persist across reruns
+            st.session_state.road_data = road_data
+            st.session_state.scoring_data = scoring_data
+            st.session_state.uploaded_files_cache = uploaded_files
+            
+            # Display results using simple approach (no complex caching)
+            display_road_results(road_data, scoring_data, road_visualizer, uploaded_files, None)
+            
+        except Exception as e:
+            progress_bar.empty()
+            status_text.empty()
+            st.error(f"❌ Road processing failed: {e}")
+            
+            # Add debugging info
+            with st.expander("🔧 Debugging Information"):
+                st.write("**Upload Info:**")
+                st.write(f"- Files uploaded: {len(uploaded_files)}")
+                
+                st.write("**Filename Analysis:**")
+                for i, file in enumerate(uploaded_files[:5]):  # Show first 5 files
+                    st.write(f"- {file.name}")
+                
+                if len(uploaded_files) > 5:
+                    st.write(f"... and {len(uploaded_files) - 5} more files")
+            return
+
+def display_road_results(road_data, scoring_data, visualizer, uploaded_files, segment_cache=None):
+    """Display comprehensive road analysis results with optional segment caching."""
+    
+    st.subheader("🎯 Road Health Assessment")
+    
+    # Main metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        score = scoring_data['overall_score']
+        category = scoring_data['health_category']
+        color = "normal" if score >= 70 else "inverse" if score >= 40 else "off"
+        
+        st.metric(
+            "Road Health Score", 
+            f"{score:.1f}/100",
+            delta=f"{category}",
+            help="Overall road condition score"
+        )
+    
+    with col2:
+        st.metric(
+            "Total Segments",
+            scoring_data['breakdown']['total_segments'],
+            help="Number of road image segments analyzed"
+        )
+    
+    with col3:
+        damage_pct = (scoring_data['breakdown']['damage_segments'] / 
+                     scoring_data['breakdown']['total_segments'] * 100)
+        st.metric(
+            "Damage Detected",
+            f"{damage_pct:.1f}%",
+            delta=f"{scoring_data['breakdown']['damage_segments']} segments"
+        )
+    
+    with col4:
+        avg_damage = scoring_data['breakdown']['average_damage_prob']
+        st.metric(
+            "Avg Damage Confidence",
+            f"{avg_damage:.3f}",
+            help="Average damage detection confidence"
+        )
+
+    # Interactive road map
+    st.subheader("🗺️ Interactive Road Map")
+    road_map = visualizer.create_interactive_road_map(road_data, scoring_data)
+    st.plotly_chart(road_map, use_container_width=True)
+    
+    # Add segment selector for detailed analysis
+    st.subheader("🔍 Segment Details")
+    
+    # Create segment selector 
+    segment_options = [f"Segment {i:03d}" for i in range(len(road_data['images']))]
+    
+    # Initialize selected segment in session state if not exists
+    if 'selected_segment' not in st.session_state:
+        st.session_state.selected_segment = 0
+    
+    # Use a simple slider without any buttons that cause reruns
+    clicked_segment = st.slider(
+        "Navigate Segments:",
+        min_value=0,
+        max_value=len(segment_options) - 1,
+        value=st.session_state.selected_segment,
+        step=1,
+        help=f"Drag to navigate segments (0-{len(segment_options)-1})",
+        key="segment_slider"
+    )
+    
+    # Update session state (no rerun needed - slider handles this automatically)
+    st.session_state.selected_segment = int(clicked_segment)
+    
+    # Show current segment info with performance tips
+    st.info(f"📍 Viewing: Segment {clicked_segment:03d} of {len(segment_options)} total segments")
+    
+    # Add performance tip
+    st.caption("💡 **Tip**: Use the slider for smooth navigation between segments. Images are cached for faster switching!")
+    
+    # Add logging for segment selection
+    logger = logging.getLogger(__name__)
+    logger.info(f"User selected segment: {clicked_segment} (Segment {clicked_segment:03d})")
+    
+    # Use fragment to isolate segment display and prevent full page reruns
+    @st.fragment
+    def display_segment_fragment():
+        """Fragment to display segment details without triggering full page rerun."""
+        col1, col2 = st.columns([3, 2])
+        
+        with col1:
+            logger.info(f"Starting display of segment {clicked_segment}")
+            start_time = time.time()
+            
+            visualizer.display_segment_details(
+                road_data, 
+                clicked_segment, 
+                uploaded_files,
+                segment_cache
+            )
+            
+            display_time = time.time() - start_time
+            logger.info(f"Completed display of segment {clicked_segment} in {display_time:.3f}s")
+        
+        with col2:
+            # Show segment location info
+            if clicked_segment < len(road_data['coordinates']):
+                segment_coord = road_data['coordinates'][clicked_segment]
+                
+                st.markdown("**📍 Segment Location**")
+                
+                # Location metrics
+                col2_1, col2_2 = st.columns(2)
+                with col2_1:
+                    st.metric("Latitude", f"{segment_coord[0]:.6f}")
+                with col2_2:
+                    st.metric("Longitude", f"{segment_coord[1]:.6f}")
+                
+                # Health score for this segment
+                if 'health_scores' in scoring_data:
+                    segment_score = scoring_data['health_scores'][clicked_segment]
+                    score_color = "normal" if segment_score >= 70 else "inverse" if segment_score >= 40 else "off"
+                    
+                    st.metric(
+                        "Health Score",
+                        f"{segment_score:.1f}/100", 
+                        help=f"Individual score for segment {clicked_segment:03d}"
+                    )
+                
+                # Road statistics
+                st.markdown("**📊 Road Analysis Summary**")
+                st.write(f"**Total Segments:** {len(road_data['images'])}")
+                st.write(f"**Current Position:** {clicked_segment + 1} of {len(road_data['images'])}")
+                
+                progress_pct = (clicked_segment + 1) / len(road_data['images'])
+                st.progress(progress_pct)
+                st.caption(f"Progress: {progress_pct:.1%} through road")
+    
+    # Execute the fragment
+    display_segment_fragment()
+    
+    # Analysis tabs
+    tab1, tab2, tab3 = st.tabs(["📊 Detailed Analysis", "🔥 Damage Heatmap", "📋 Segment Details"])
+    
+    with tab1:
+        breakdown_chart = visualizer.create_score_breakdown_chart(scoring_data)
+        st.plotly_chart(breakdown_chart, use_container_width=True)
+    
+    with tab2:
+        damage_heatmap = visualizer.create_damage_heatmap(road_data)
+        st.plotly_chart(damage_heatmap, use_container_width=True)
+    
+    with tab3:
+        # Segment details table
+        segment_data = visualizer.create_segment_details_table(road_data, scoring_data, max_rows=20)
+        st.dataframe(segment_data, use_container_width=True)
+        
+        if len(scoring_data['segments']) > 20:
+            st.info(f"Showing first 20 of {len(scoring_data['segments'])} segments")
+    
+    # Download section
+    st.subheader("💾 Export Results")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Road report JSON
+        road_report = {
+            'road_data': convert_numpy_types(road_data),
+            'scoring_data': convert_numpy_types(scoring_data),
+            'metadata': {
+                'processing_date': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'total_images': len(road_data['images'])
+            }
+        }
+        
+        json_str = json.dumps(road_report, indent=2)
+        st.download_button(
+            label="📄 Download Road Report",
+            data=json_str,
+            file_name=f"road_analysis_{int(time.time())}.json",
+            mime="application/json"
+        )
+    
+    with col2:
+        st.info("📊 Additional exports (maps, charts) available in full version")
+
 def main():
     """Main Streamlit application."""
     # Header
@@ -957,8 +1228,8 @@ def main():
     # Processing mode
     processing_mode = st.sidebar.radio(
         "Processing Mode",
-        ["Single Image", "Batch Processing"],
-        help="Choose between analyzing one image or multiple images at once"
+        ["Single Image", "Batch Processing", "Road Folder Analysis"],
+        help="Choose between analyzing one image, multiple images, or entire road folder"
     )
     
     # Image display options
@@ -1166,7 +1437,7 @@ def main():
                         mime="image/png"
                     )
     
-    else:  # Batch processing
+    elif processing_mode == "Batch Processing":
         st.header("📁 Upload Multiple Images")
         
         uploaded_files = st.file_uploader(
@@ -1218,6 +1489,72 @@ def main():
                         file_name=f"batch_results_{int(time.time())}.json",
                         mime="application/json"
                     )
+    
+    else:  # Road Folder Analysis
+        st.header("🛣️ Road Folder Analysis")
+        
+        uploaded_files = st.file_uploader(
+            "Choose road images...",
+            type=['jpg', 'jpeg', 'png'],
+            accept_multiple_files=True,
+            help="Upload all images from a road folder with format: XXX_longitude_latitude.ext"
+        )
+        
+        if uploaded_files:
+            # Clear cached results when new files are uploaded
+            current_files = [f.name for f in uploaded_files]
+            cached_files = st.session_state.get('cached_file_names', [])
+            
+            if current_files != cached_files:
+                # New files uploaded, clear cache
+                for key in ['road_data', 'scoring_data', 'uploaded_files_cache', 'cached_file_names']:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.session_state.cached_file_names = current_files
+            
+            # Validate filename format
+            valid_count = 0
+            for file in uploaded_files:
+                if re.match(r'^\d+_-?\d+\.?\d*_-?\d+\.?\d*\.(png|jpg|jpeg)$', file.name, re.IGNORECASE):
+                    valid_count += 1
+
+            st.info(f"Found {valid_count}/{len(uploaded_files)} valid road images")
+            
+            if valid_count < 2:
+                st.error("Need at least 2 valid road images with correct filename format: XXX_longitude_latitude.ext")
+                st.markdown("""
+                **Expected filename format:**
+                - `000_31.296905_-97.543646.png`
+                - `001_31.296954_-97.543848.jpg`
+                - Sequence number + longitude + latitude + extension
+                """)
+            else:
+                # Check if we have cached results first
+                if 'road_data' in st.session_state and 'scoring_data' in st.session_state:
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.success("✅ Using cached analysis results")
+                    with col2:
+                        if st.button("🗑️ Clear Cache", help="Clear cached results and start fresh"):
+                            for key in ['road_data', 'scoring_data', 'uploaded_files_cache', 'cached_file_names', 'selected_segment', 'last_displayed_segment']:
+                                if key in st.session_state:
+                                    del st.session_state[key]
+                            st.rerun()
+                    
+                    # Create road visualizer for cached results
+                    road_visualizer = RoadVisualizer()
+                    
+                    display_road_results(
+                        st.session_state.road_data, 
+                        st.session_state.scoring_data, 
+                        road_visualizer, 
+                        st.session_state.get('uploaded_files_cache', uploaded_files),
+                        None  # No segment cache for session state results (fallback mode)
+                    )
+                else:
+                    # Show analyze button if no cached results
+                    if st.button("🚀 Analyze Road", type="primary"):
+                        process_road_folder(uploaded_files, engine, heatmap_gen, thresholds)
     
     # Footer
     st.markdown("---")
