@@ -103,6 +103,12 @@ Our dataset comprises 18,173 road images systematically collected and annotated 
 \item \textbf{Test Set}: 3,632 images (20.0\%)
 \end{itemize}
 
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/dataset_split_analysis.png}
+\caption{Comprehensive dataset organization showing road-based splitting across 91 unique roads to prevent data leakage and ensure realistic evaluation conditions.}
+\end{figure}
+
 \subsection{Label Distribution and Class Imbalance}
 
 The dataset exhibits significant class imbalance, which proved crucial to our eventual breakthrough in per-class threshold optimization:
@@ -126,6 +132,25 @@ The dataset exhibits significant class imbalance, which proved crucial to our ev
 \end{itemize}
 
 The severe imbalance in crop detection (4.3\% positive examples) and moderate imbalance in occlusion detection (19.1\%) drove our exploration of adaptive threshold strategies.
+
+\begin{figure}[!htb]
+\centering
+\begin{minipage}{0.32\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/damage_classification_distribution.png}
+\end{minipage}
+\hfill
+\begin{minipage}{0.32\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/occlusion_classification_distribution.png}
+\end{minipage}
+\hfill
+\begin{minipage}{0.32\textwidth}
+\centering
+\includegraphics[width=\textwidth]{images/crop_classification_distribution.png}
+\end{minipage}
+\caption{Class distribution across the three classification tasks showing varying degrees of imbalance that drove our per-class threshold optimization approach.}
+\end{figure}
 
 \subsection{Road Section Annotation Process}
 
@@ -211,32 +236,32 @@ Both models were trained with identical hyperparameters:
 Our breakthrough approach combines Models B and H using equal weighting (0.5/0.5) with per-class threshold optimization:
 
 \begin{figure}[!htb]
-\centering
-\begin{tikzpicture}[
-  node distance=5mm,
-  box/.style={draw, rounded corners, align=center, minimum width=3cm, minimum height=1cm, inner sep=2pt, font=\small},
-  arr/.style={-Latex}
-]
-  \node[box] (input) {Input Image\\$256 \times 256 \times 3$};
-  
-  \node[box, below left=8mm of input] (modelb) {Model B\\EfficientNet-B3\\(Augmentation)};
-  \node[box, below right=8mm of input] (modelh) {Model H\\EfficientNet-B3\\(CLAHE + Masks)};
-  
-  \node[box, below=12mm of input] (ensemble) {Ensemble Averaging\\(0.5/0.5 weights)};
-  
-  \node[box, below=8mm of ensemble] (thresholds) {Per-Class Thresholds\\Dam:0.50, Occ:0.40, Crop:0.49};
-  
-  \node[box, below=8mm of thresholds] (output) {Final Predictions};
-  
-  \draw[arr] (input) -- (modelb);
-  \draw[arr] (input) -- (modelh);
-  \draw[arr] (modelb) -- (ensemble);
-  \draw[arr] (modelh) -- (ensemble);
-  \draw[arr] (ensemble) -- (thresholds);
-  \draw[arr] (thresholds) -- (output);
-\end{tikzpicture}
-\caption{Two-model ensemble architecture with per-class threshold optimization}
-\end{figure}
+  \centering
+  \begin{tikzpicture}[
+    node distance=5mm,
+    box/.style={draw, rounded corners, align=center, minimum width=3cm, minimum height=1cm, inner sep=2pt, font=\small},
+    arr/.style={-Latex}
+  ]
+    \node[box] (input) {Input Image\\$256 \times 256 \times 3$};
+    
+    \node[box, below left=8mm of input] (modelb) {Model B\\EfficientNet-B3\\(Augmentation)};
+    \node[box, below right=8mm of input] (modelh) {Model H\\EfficientNet-B3\\(CLAHE + Masks)};
+    
+    \node[box, below=12mm of input] (ensemble) {Ensemble Averaging\\(0.5/0.5 weights)};
+    
+    \node[box, below=8mm of ensemble] (thresholds) {Per-Class Thresholds\\Dam:0.50, Occ:0.40, Crop:0.49};
+    
+    \node[box, below=8mm of thresholds] (output) {Final Predictions};
+    
+    \draw[arr] (input) -- (modelb);
+    \draw[arr] (input) -- (modelh);
+    \draw[arr] (modelb) -- (ensemble);
+    \draw[arr] (modelh) -- (ensemble);
+    \draw[arr] (ensemble) -- (thresholds);
+    \draw[arr] (thresholds) -- (output);
+  \end{tikzpicture}
+  \caption{Two-model ensemble architecture with per-class threshold optimization}
+  \end{figure}
 
 \section{Comprehensive Performance Analysis}
 
@@ -252,6 +277,12 @@ Our systematic analysis of model performance across all classes reveals distinct
 
 The precision-recall curves demonstrate class separability under realistic class imbalance conditions, with crop detection dominating the performance space while damage detection presents the greatest classification challenge due to its flatter PR curve characteristics.
 
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/performance_metrics_analysis.png}
+\caption{Global performance metrics showing ROC AUC and Average Precision scores across all classification tasks, demonstrating varying degrees of class separability.}
+\end{figure}
+
 \subsection{Operational Performance Analysis}
 
 Our balanced threshold configuration provides the following operational characteristics per 1,000 processed images:
@@ -264,29 +295,47 @@ Our balanced threshold configuration provides the following operational characte
 
 This alert distribution enables practical deployment scenarios where different response strategies can be applied based on class-specific confidence levels and operational requirements.
 
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/operational_performance_analysis.png}
+\caption{Operational performance analysis showing expected alert rates and miss rates per 1,000 processed images for practical deployment scenarios.}
+\end{figure}
+
 \subsection{Alternative Threshold Strategies}
 
 Beyond our balanced approach, we identified two additional operational modes:
 
 \textbf{High-Recall Mode} (targeting ~90\% recall):
 \begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
-\item Damage (τ≈0.12): P=0.32, R=0.90 — suitable for comprehensive audits
-\item Occlusion (τ≈0.10): P=0.52, R=0.91 — effective for safety sweeps
-\item Crop (τ≈0.25): P=0.78, R=0.90 — maintains good precision
+\item Damage ($\tau \approx 0.12$): P=0.32, R=0.90 — suitable for comprehensive audits
+\item Occlusion ($\tau \approx 0.10$): P=0.52, R=0.91 — effective for safety sweeps
+\item Crop ($\tau \approx 0.25$): P=0.78, R=0.90 — maintains good precision
 \end{itemize}
 
 \textbf{High-Precision Mode} (targeting 80-90\% precision):
 \begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
-\item Damage (τ≈0.89): P=0.80, R=0.19 — requires human verification
-\item Occlusion (τ≈0.64): P=0.90, R=0.49 — automated action suitable
-\item Crop (τ≈0.38): P=0.90, R=0.87 — excellent automation candidate
+\item Damage ($\tau \approx 0.89$): P=0.80, R=0.19 — requires human verification
+\item Occlusion ($\tau \approx 0.64$): P=0.90, R=0.49 — automated action suitable
+\item Crop ($\tau \approx 0.38$): P=0.90, R=0.87 — excellent automation candidate
 \end{itemize}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/threshold_strategies_comparison.png}
+\caption{Comparison of three operational threshold strategies (balanced, high-recall, high-precision) showing performance trade-offs and recommended use cases.}
+\end{figure}
 
 \section{Results and Breakthrough Discovery}
 
 \subsection{Individual Model Performance}
 
 Our systematic evaluation revealed complementary strengths between our two best models:
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/model_comparison_detailed.png}
+\caption{Comprehensive comparison of individual models showing complementary strengths between pure feature learning (Model B) and enhanced preprocessing (Model H) approaches.}
+\end{figure}
 
 \begin{table}[!h]
 \centering
@@ -315,9 +364,21 @@ Model H & 0.781 & 2.99 & 37 \\
 \item Crop: Precision 97.4\%, Recall 94.4\%, F1 95.9\%
 \end{itemize}
 
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/individual_model_breakdown.png}
+\caption{Detailed per-class performance breakdown for both models showing why ensemble combination outperforms individual approaches.}
+\end{figure}
+
 \subsection{The Per-Class Threshold Breakthrough}
 
 The critical discovery that transformed our project came through systematic threshold optimization. Standard ensemble approaches using uniform 0.5 thresholds achieved only 63.3\% accuracy. However, optimizing thresholds per class revealed fundamental insights about road distress detection:
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/breakthrough_analysis.png}
+\caption{Dramatic visualization of the per-class threshold breakthrough showing 28.7\% accuracy improvement from threshold optimization across all classification tasks.}
+\end{figure}
 
 \begin{table}[!h]
 \centering
@@ -340,6 +401,12 @@ Crop & 0.49 & 0.99 & 0.86 & 0.99 \\
 \textbf{Occlusion Detection (0.40 threshold):} The lowered threshold captures subtle environmental factors—shadows, vegetation, or debris—achieving high precision (0.80) and good recall (0.75) with 93\% accuracy, significantly outperforming standard 0.5 thresholds.
 
 \textbf{Crop Detection (0.49 threshold):} The near-standard threshold achieves exceptional precision (0.99) and strong recall (0.86) with 99\% accuracy, effectively identifying incomplete road views while minimizing false alarms.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{images/threshold_optimization_analysis.png}
+\caption{Comprehensive per-class threshold optimization results showing how different distress types require fundamentally different decision sensitivity levels.}
+\end{figure}
 
 \subsection{Final Ensemble Results}
 
@@ -474,6 +541,12 @@ Our research methodology involved systematic experimentation across multiple pha
 \end{itemize}
 
 \textbf{Validation Results}: 138/150 predictions correct across 50 test images, confirming production-ready performance.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.9\textwidth]{images/experimental_timeline_detailed.png}
+\caption{Comprehensive experimental evolution timeline showing systematic methodology progression from initial development through breakthrough discovery.}
+\end{figure}
 
 \subsection{Methodological Insights}
 
