@@ -1029,7 +1029,88 @@ def process_road_folder(uploaded_files, engine, heatmap_gen, thresholds):
 def display_road_results(road_data, scoring_data, visualizer, uploaded_files, segment_cache=None):
     """Display comprehensive road analysis results with optional segment caching."""
     
-    st.subheader("🎯 Road Health Assessment")
+    # --- Static render gating to avoid full-page redraw on segment change ---
+    # Create a lightweight cache key for the current road (filenames + count)
+    road_key = (
+        len(road_data.get('images', [])),
+        tuple(img.get('filename') for img in road_data.get('images', []))
+    )
+    
+    ui_needs_init = (
+        'ui_initialized' not in st.session_state or
+        st.session_state.get('last_road_key') != road_key
+    )
+    
+    if ui_needs_init:
+        # Reset UI placeholders when road changes
+        st.session_state.ui_initialized = False
+        st.session_state.last_road_key = road_key
+        st.session_state.placeholders = {
+            'metrics': st.empty(),
+            'map': st.empty(),
+            'tabs': st.empty(),
+        }
+    
+    # Render static sections only once per road (metrics/map/tabs)
+    if not st.session_state.get('ui_initialized'):
+        with st.session_state.placeholders['metrics']:
+            st.subheader("🎯 Road Health Assessment")
+            # Main metrics row
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                score = scoring_data['overall_score']
+                category = scoring_data['health_category']
+                color = "normal" if score >= 70 else "inverse" if score >= 40 else "off"
+                st.metric(
+                    "Road Health Score", 
+                    f"{score:.1f}/100",
+                    delta=f"{category}",
+                    help="Overall road condition score"
+                )
+            with col2:
+                st.metric("Total Segments", scoring_data['breakdown']['total_segments'], help="Number of road image segments analyzed")
+            with col3:
+                damage_pct = (scoring_data['breakdown']['damage_segments'] / scoring_data['breakdown']['total_segments'] * 100)
+                st.metric("Damage Detected", f"{damage_pct:.1f}%", delta=f"{scoring_data['breakdown']['damage_segments']} segments")
+            with col4:
+                avg_damage = scoring_data['breakdown']['average_damage_prob']
+                st.metric("Avg Damage Confidence", f"{avg_damage:.3f}", help="Average damage detection confidence")
+        
+        with st.session_state.placeholders['map']:
+            st.subheader("🗺️ Interactive Road Map")
+            # Cache the map figure creation to avoid recomputation
+            @st.cache_data(show_spinner=False)
+            def _cached_map(_road_key, _road, _score):
+                return visualizer.create_interactive_road_map(_road, _score)
+            road_map = _cached_map(road_key, road_data, scoring_data)
+            st.plotly_chart(road_map, use_container_width=True)
+        
+        with st.session_state.placeholders['tabs']:
+            # Analysis tabs (static for a given road)
+            tab1, tab2, tab3 = st.tabs(["📊 Detailed Analysis", "🔥 Damage Heatmap", "📋 Segment Details"]) 
+            with tab1:
+                @st.cache_data(show_spinner=False)
+                def _cached_breakdown(_road_key, _score):
+                    return visualizer.create_score_breakdown_chart(_score)
+                breakdown_chart = _cached_breakdown(road_key, scoring_data)
+                st.plotly_chart(breakdown_chart, use_container_width=True)
+            with tab2:
+                @st.cache_data(show_spinner=False)
+                def _cached_heatmap(_road_key, _road):
+                    return visualizer.create_damage_heatmap(_road)
+                damage_heatmap = _cached_heatmap(road_key, road_data)
+                st.plotly_chart(damage_heatmap, use_container_width=True)
+            with tab3:
+                @st.cache_data(show_spinner=False)
+                def _cached_table(_road_key, _road, _score):
+                    return visualizer.create_segment_details_table(_road, _score, max_rows=20)
+                segment_data = _cached_table(road_key, road_data, scoring_data)
+                st.dataframe(segment_data, use_container_width=True)
+                if len(scoring_data['segments']) > 20:
+                    st.info(f"Showing first 20 of {len(scoring_data['segments'])} segments")
+        
+        # Mark as initialized so subsequent segment changes do not redraw static sections
+        st.session_state.ui_initialized = True
     
     # Main metrics row
     col1, col2, col3, col4 = st.columns(4)
@@ -1070,22 +1151,19 @@ def display_road_results(road_data, scoring_data, visualizer, uploaded_files, se
             help="Average damage detection confidence"
         )
 
-    # Interactive road map
-    st.subheader("🗺️ Interactive Road Map")
-    road_map = visualizer.create_interactive_road_map(road_data, scoring_data)
-    st.plotly_chart(road_map, use_container_width=True)
-    
-    # Add segment selector for detailed analysis
+    # Add segment selector for detailed analysis (dynamic only)
     st.subheader("🔍 Segment Details")
     
     # Create segment selector 
     segment_options = [f"Segment {i:03d}" for i in range(len(road_data['images']))]
     
-    # Initialize selected segment in session state if not exists
-    if 'selected_segment' not in st.session_state:
-        st.session_state.selected_segment = 0
+    # Persistent segment area container (only this gets redrawn on selection)
+    if 'segment_area' not in st.session_state:
+        st.session_state.segment_area = st.empty()
+        if 'selected_segment' not in st.session_state:
+            st.session_state.selected_segment = 0
     
-    # Use a simple slider without any buttons that cause reruns
+    # Simple slider (outside render area) updates session state
     clicked_segment = st.slider(
         "Navigate Segments:",
         min_value=0,
@@ -1095,95 +1173,32 @@ def display_road_results(road_data, scoring_data, visualizer, uploaded_files, se
         help=f"Drag to navigate segments (0-{len(segment_options)-1})",
         key="segment_slider"
     )
-    
-    # Update session state (no rerun needed - slider handles this automatically)
     st.session_state.selected_segment = int(clicked_segment)
     
-    # Show current segment info with performance tips
-    st.info(f"📍 Viewing: Segment {clicked_segment:03d} of {len(segment_options)} total segments")
-    
-    # Add performance tip
-    st.caption("💡 **Tip**: Use the slider for smooth navigation between segments. Images are cached for faster switching!")
-    
-    # Add logging for segment selection
-    logger = logging.getLogger(__name__)
-    logger.info(f"User selected segment: {clicked_segment} (Segment {clicked_segment:03d})")
-    
-    # Use fragment to isolate segment display and prevent full page reruns
-    @st.fragment
-    def display_segment_fragment():
-        """Fragment to display segment details without triggering full page rerun."""
+    # Render the dynamic segment content inside the persistent container
+    container = st.session_state.segment_area
+    with container.container():
+        st.info(f"📍 Viewing: Segment {clicked_segment:03d} of {len(segment_options)} total segments")
+        logger = logging.getLogger(__name__)
+        logger.info(f"User selected segment: {clicked_segment} (Segment {clicked_segment:03d})")
         col1, col2 = st.columns([3, 2])
-        
         with col1:
-            logger.info(f"Starting display of segment {clicked_segment}")
             start_time = time.time()
-            
-            visualizer.display_segment_details(
-                road_data, 
-                clicked_segment, 
-                uploaded_files,
-                segment_cache
-            )
-            
-            display_time = time.time() - start_time
-            logger.info(f"Completed display of segment {clicked_segment} in {display_time:.3f}s")
-        
+            visualizer.display_segment_details(road_data, clicked_segment, uploaded_files)
+            logger.info(f"Segment {clicked_segment} display in {time.time()-start_time:.3f}s")
         with col2:
-            # Show segment location info
             if clicked_segment < len(road_data['coordinates']):
                 segment_coord = road_data['coordinates'][clicked_segment]
-                
                 st.markdown("**📍 Segment Location**")
-                
-                # Location metrics
-                col2_1, col2_2 = st.columns(2)
-                with col2_1:
-                    st.metric("Latitude", f"{segment_coord[0]:.6f}")
-                with col2_2:
-                    st.metric("Longitude", f"{segment_coord[1]:.6f}")
-                
-                # Health score for this segment
+                c1, c2 = st.columns(2)
+                with c1: st.metric("Latitude", f"{segment_coord[0]:.6f}")
+                with c2: st.metric("Longitude", f"{segment_coord[1]:.6f}")
                 if 'health_scores' in scoring_data:
                     segment_score = scoring_data['health_scores'][clicked_segment]
-                    score_color = "normal" if segment_score >= 70 else "inverse" if segment_score >= 40 else "off"
-                    
-                    st.metric(
-                        "Health Score",
-                        f"{segment_score:.1f}/100", 
-                        help=f"Individual score for segment {clicked_segment:03d}"
-                    )
-                
-                # Road statistics
-                st.markdown("**📊 Road Analysis Summary**")
-                st.write(f"**Total Segments:** {len(road_data['images'])}")
-                st.write(f"**Current Position:** {clicked_segment + 1} of {len(road_data['images'])}")
-                
-                progress_pct = (clicked_segment + 1) / len(road_data['images'])
-                st.progress(progress_pct)
-                st.caption(f"Progress: {progress_pct:.1%} through road")
+                    st.metric("Health Score", f"{segment_score:.1f}/100", help=f"Individual score for segment {clicked_segment:03d}")
+                st.caption(f"Progress: {(clicked_segment+1)/len(road_data['images']):.1%} through road")
     
-    # Execute the fragment
-    display_segment_fragment()
-    
-    # Analysis tabs
-    tab1, tab2, tab3 = st.tabs(["📊 Detailed Analysis", "🔥 Damage Heatmap", "📋 Segment Details"])
-    
-    with tab1:
-        breakdown_chart = visualizer.create_score_breakdown_chart(scoring_data)
-        st.plotly_chart(breakdown_chart, use_container_width=True)
-    
-    with tab2:
-        damage_heatmap = visualizer.create_damage_heatmap(road_data)
-        st.plotly_chart(damage_heatmap, use_container_width=True)
-    
-    with tab3:
-        # Segment details table
-        segment_data = visualizer.create_segment_details_table(road_data, scoring_data, max_rows=20)
-        st.dataframe(segment_data, use_container_width=True)
-        
-        if len(scoring_data['segments']) > 20:
-            st.info(f"Showing first 20 of {len(scoring_data['segments'])} segments")
+    # Static analysis tabs already rendered when UI initialized
     
     # Download section
     st.subheader("💾 Export Results")
