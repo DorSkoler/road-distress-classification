@@ -444,6 +444,85 @@ Our production system includes comprehensive inference capabilities:
 \item \textbf{Reliability}: Comprehensive error handling and fallback mechanisms
 \end{itemize}
 
+\subsection{Road Health Scoring System}
+
+Beyond individual image classification, our system provides comprehensive road health assessment through a novel scoring algorithm that aggregates segment-level predictions into actionable road condition metrics.
+
+\subsubsection{Individual Segment Scoring}
+
+Each road segment begins with a perfect health score of 100 points. The algorithm applies confidence-weighted penalties based on our three classification categories, reflecting the relative operational impact of different distress types:
+
+\textbf{Damage Detection Penalties} (Primary Factor):
+\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
+\item High Confidence (>0.8): -50 points
+\item Medium Confidence (0.5-0.8): -30 points
+\item Low Confidence (<0.5, prediction=true): -15 points
+\end{itemize}
+
+\textbf{Occlusion Detection Penalties} (Secondary Factor):
+\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
+\item High Confidence (>0.8): -20 points
+\item Medium Confidence (0.5-0.8): -12 points
+\item Low Confidence (<0.5, prediction=true): -5 points
+\end{itemize}
+
+\textbf{Crop/Quality Issue Penalties} (Tertiary Factor):
+\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
+\item High Confidence (>0.8): -15 points
+\item Medium Confidence (0.5-0.8): -8 points
+\item Low Confidence (<0.5, prediction=true): -3 points
+\end{itemize}
+
+\subsubsection{Penalty Hierarchy Rationale}
+
+The hierarchical penalty structure reflects practical deployment considerations:
+
+\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=3pt]
+\item \textbf{Damage penalties} are highest because they represent actual infrastructure problems requiring immediate maintenance attention
+\item \textbf{Occlusion penalties} are moderate as they indicate assessment uncertainty but don't necessarily imply structural damage
+\item \textbf{Crop penalties} are lowest since they primarily affect image quality while still allowing partial road assessment
+\end{itemize}
+
+\subsubsection{Overall Road Score Calculation}
+
+The final road health score is computed as the arithmetic mean of all individual segment scores:
+
+\begin{equation}
+\text{Road Score} = \frac{1}{N} \sum_{i=1}^{N} \text{Segment Score}_i
+\end{equation}
+
+where $N$ is the total number of road segments. This approach ensures that:
+\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
+\item Roads with consistent quality across all segments receive high scores
+\item Roads with localized issues are penalized proportionally to problem extent and severity
+\item Multiple minor issues accumulate to reflect overall road condition accurately
+\end{itemize}
+
+\subsubsection{Health Categorization}
+
+Numerical scores map to qualitative health categories for operational decision-making:
+
+\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=3pt]
+\item \textbf{Excellent (90-100)}: Minimal to no issues detected, routine monitoring sufficient
+\item \textbf{Good (75-89)}: Minor issues that don't significantly impact road safety
+\item \textbf{Fair (60-74)}: Moderate issues requiring monitoring and planned maintenance
+\item \textbf{Poor (40-59)}: Significant problems needing prioritized attention
+\item \textbf{Critical (<40)}: Severe issues requiring immediate intervention
+\end{itemize}
+
+\subsubsection{Operational Analytics}
+
+The scoring system provides comprehensive statistics for maintenance planning:
+
+\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=3pt]
+\item \textbf{Segment-Level Analysis}: Individual scores for targeted maintenance
+\item \textbf{Problem Distribution}: Percentage of segments with each issue type
+\item \textbf{Confidence Metrics}: Average prediction confidence across categories
+\item \textbf{Geographic Mapping}: Spatial distribution of problems along road corridors
+\end{itemize}
+
+This scoring methodology bridges the gap between individual image classification and actionable road maintenance decisions, providing transportation authorities with both high-level condition assessments and detailed breakdowns for resource allocation and maintenance prioritization.
+
 \section{Experimental Evolution and Methodology}
 
 \subsection{Comprehensive Experimental Timeline}
