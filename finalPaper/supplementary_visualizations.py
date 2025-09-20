@@ -36,7 +36,7 @@ def save_plot(filename):
 # 1. Experimental Evolution Timeline
 def create_experimental_timeline():
     """Create detailed experimental evolution timeline"""
-    fig, ax = plt.subplots(1, 1, figsize=(18, 12))
+    fig, ax = plt.subplots(1, 1, figsize=(20, 14))
     
     # Timeline data from paper with more details
     phases = [
@@ -77,7 +77,7 @@ def create_experimental_timeline():
         },
         {
             'date': '2025-08-01',
-            'title': 'Ensemble Breakthrough',
+            'title': 'Ensemble Results',
             'description': 'Per-class threshold optimization,\nensemble design',
             'outcomes': '63.3% → 92% accuracy\n(+28.7% improvement)',
             'color': '#e67e22'
@@ -87,55 +87,52 @@ def create_experimental_timeline():
     # Create timeline
     y_positions = np.arange(len(phases))[::-1]  # Reverse for chronological order
     
-    # Main timeline bars
+    # Main timeline bars with enhanced styling
     for i, phase in enumerate(phases):
         y_pos = y_positions[i]
         
-        # Main phase bar
-        phase_bar = FancyBboxPatch((0, y_pos-0.35), 8, 0.7, 
-                                  boxstyle="round,pad=0.05", 
+        # Main phase bar with gradient effect
+        phase_bar = FancyBboxPatch((0.5, y_pos-0.4), 9, 0.8, 
+                                  boxstyle="round,pad=0.08", 
                                   facecolor=phase['color'], 
                                   edgecolor='black', 
-                                  linewidth=2, alpha=0.8)
+                                  linewidth=2, alpha=0.9)
         ax.add_patch(phase_bar)
         
-        # Phase title and date
-        ax.text(0.2, y_pos, f"{phase['title']}\n({phase['date']})", 
-                ha='left', va='center', fontweight='bold', fontsize=12, color='white')
+        # Phase title and date with proportional font
+        ax.text(1, y_pos, f"{phase['title']}\n({phase['date']})", 
+                ha='left', va='center', fontweight='bold', fontsize=11, color='white')
         
-        # Description
-        ax.text(4, y_pos, phase['description'], 
-                ha='center', va='center', fontsize=11, color='white')
+        # Description with proportional spacing
+        ax.text(5, y_pos, phase['description'], 
+                ha='center', va='center', fontsize=10, color='white', fontweight='bold')
         
-        # Outcomes box
-        outcome_box = FancyBboxPatch((8.5, y_pos-0.3), 4, 0.6, 
-                                    boxstyle="round,pad=0.05", 
-                                    facecolor='lightgray', 
-                                    edgecolor='black', 
-                                    linewidth=1, alpha=0.9)
+        # Enhanced outcomes box
+        outcome_box = FancyBboxPatch((10, y_pos-0.35), 5, 0.7, 
+                                    boxstyle="round,pad=0.08", 
+                                    facecolor='white', 
+                                    edgecolor=phase['color'], 
+                                    linewidth=2, alpha=0.95)
         ax.add_patch(outcome_box)
-        ax.text(10.5, y_pos, phase['outcomes'], 
-                ha='center', va='center', fontsize=10, fontweight='bold')
+        ax.text(12.5, y_pos, phase['outcomes'], 
+                ha='center', va='center', fontsize=10, fontweight='bold', color=phase['color'])
         
-        # Add connecting arrow for breakthrough
-        if i == len(phases) - 1:  # Last phase (breakthrough)
-            ax.annotate('BREAKTHROUGH!', 
-                       xy=(6, y_pos), xytext=(14, y_pos + 1),
-                       arrowprops=dict(arrowstyle='->', lw=3, color='red'),
-                       fontsize=16, fontweight='bold', color='red',
-                       bbox=dict(boxstyle="round,pad=0.3", facecolor='yellow', alpha=0.9))
+        # Remove annotation for cleaner look
     
-    # Timeline connector line
-    ax.plot([0.1, 0.1], [y_positions[-1]-0.5, y_positions[0]+0.5], 
-            'k-', linewidth=3, alpha=0.5)
+    # Enhanced timeline connector line
+    ax.plot([0.3, 0.3], [y_positions[-1]-0.5, y_positions[0]+0.5], 
+            'k-', linewidth=4, alpha=0.6)
     
-    # Add month markers
+    # Add proportional progress markers
     for i, y_pos in enumerate(y_positions):
-        ax.plot([0.05, 0.15], [y_pos, y_pos], 'ko-', markersize=8, linewidth=2)
+        ax.plot([0.2, 0.4], [y_pos, y_pos], 'ko-', markersize=8, linewidth=2)
+        ax.text(0.1, y_pos, f'{i+1}', ha='center', va='center', fontsize=10, 
+                fontweight='bold', color='white',
+                bbox=dict(boxstyle="circle,pad=0.08", facecolor='black', alpha=0.8))
     
-    # Styling
-    ax.set_xlim(-0.5, 15)
-    ax.set_ylim(-0.8, len(phases) - 0.2)
+    # Enhanced styling
+    ax.set_xlim(-0.2, 17)
+    ax.set_ylim(-0.8, len(phases) - 0.1)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.spines['top'].set_visible(False)
@@ -143,24 +140,20 @@ def create_experimental_timeline():
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
     
-    # Column headers
-    ax.text(4, len(phases), 'Experimental Phase & Activities', 
-            ha='center', va='center', fontsize=14, fontweight='bold')
-    ax.text(10.5, len(phases), 'Key Outcomes & Results', 
-            ha='center', va='center', fontsize=14, fontweight='bold')
+    # Proportional column headers
+    ax.text(5, len(phases) + 0.2, 'Experimental Phase & Activities', 
+            ha='center', va='center', fontsize=12, fontweight='bold',
+            bbox=dict(boxstyle="round,pad=0.2", facecolor='lightblue', alpha=0.8))
+    ax.text(12.5, len(phases) + 0.2, 'Key Outcomes & Results', 
+            ha='center', va='center', fontsize=12, fontweight='bold',
+            bbox=dict(boxstyle="round,pad=0.2", facecolor='lightcoral', alpha=0.8))
     
-    plt.title('Experimental Evolution Timeline\nSystematic Methodology Leading to Breakthrough Performance', 
-              fontsize=18, fontweight='bold', pad=30)
+    # Remove title to prevent overlap
     
-    # Add methodology note
-    fig.text(0.5, 0.02, 
-             'Timeline shows systematic experimental progression from basic setup to breakthrough performance.\n' +
-             'Each phase built upon previous insights, culminating in the per-class threshold optimization discovery.',
-             ha='center', va='bottom', fontsize=12, style='italic',
-             bbox=dict(boxstyle="round,pad=0.5", facecolor='lightblue', alpha=0.7))
+    # Remove bottom annotation to clean up the visualization
     
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.12)
+    plt.subplots_adjust(bottom=0.05, top=0.95)
     save_plot('experimental_timeline_detailed.png')
 
 # 2. Ensemble Architecture Diagram
