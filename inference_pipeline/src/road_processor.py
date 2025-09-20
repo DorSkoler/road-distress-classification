@@ -286,10 +286,44 @@ class RoadProcessor:
                 'health_category': 'Unknown'
             }
         
-        # Scoring weights and penalties
-        DAMAGE_PENALTIES = {'high': 50, 'medium': 30, 'low': 15}  # Based on confidence
-        OCCLUSION_PENALTIES = {'high': 20, 'medium': 12, 'low': 5}
-        CROP_PENALTIES = {'high': 15, 'medium': 8, 'low': 3}
+        # Dynamic confidence-based penalties with class-specific maximums
+        # Penalties scale smoothly from threshold to maximum confidence
+        MAX_PENALTIES = {
+            'damage': 75,      # Maximum penalty for damage detection
+            'occlusion': 20,   # Maximum penalty for occlusion detection  
+            'crop': 5          # Maximum penalty for crop detection
+        }
+        
+        # Class-specific thresholds for penalty calculation
+        THRESHOLDS = {
+            'damage': 0.5,
+            'occlusion': 0.4,
+            'crop': 0.49
+        }
+        
+        def calculate_dynamic_penalty(class_name, confidence):
+            """
+            Calculate dynamic penalty based on confidence level.
+            Penalty scales smoothly from 0 (at threshold) to maximum (at confidence=1.0)
+            
+            Args:
+                class_name: 'damage', 'occlusion', or 'crop'
+                confidence: Model confidence [0.0-1.0]
+            
+            Returns:
+                float: Penalty amount (0 to max_penalty)
+            """
+            threshold = THRESHOLDS[class_name]
+            max_penalty = MAX_PENALTIES[class_name]
+            
+            if confidence < threshold:
+                return 0  # No penalty below threshold
+            
+            # Scale penalty from 0 (at threshold) to max_penalty (at confidence=1.0)
+            penalty_factor = (confidence - threshold) / (1.0 - threshold)
+            penalty = penalty_factor * max_penalty
+            
+            return penalty
         
         segment_scores = []
         
@@ -297,43 +331,28 @@ class RoadProcessor:
         for i in range(len(results['predictions']['damage'])):
             segment_score = 100  # Start with perfect score
             
-            # Apply damage penalties
+            # Apply dynamic damage penalties
             damage_prob = results['predictions']['damage'][i]['probability']
             damage_pred = results['predictions']['damage'][i]['prediction']
             
             if damage_pred:
-                if damage_prob > 0.8:
-                    penalty = DAMAGE_PENALTIES['high']
-                elif damage_prob > 0.5:
-                    penalty = DAMAGE_PENALTIES['medium'] 
-                else:
-                    penalty = DAMAGE_PENALTIES['low']
+                penalty = calculate_dynamic_penalty('damage', damage_prob)
                 segment_score -= penalty
             
-            # Apply occlusion penalties
+            # Apply dynamic occlusion penalties
             occlusion_prob = results['predictions']['occlusion'][i]['probability']
             occlusion_pred = results['predictions']['occlusion'][i]['prediction']
             
             if occlusion_pred:
-                if occlusion_prob > 0.8:
-                    penalty = OCCLUSION_PENALTIES['high']
-                elif occlusion_prob > 0.5:
-                    penalty = OCCLUSION_PENALTIES['medium']
-                else:
-                    penalty = OCCLUSION_PENALTIES['low']
+                penalty = calculate_dynamic_penalty('occlusion', occlusion_prob)
                 segment_score -= penalty
             
-            # Apply crop penalties
+            # Apply dynamic crop penalties
             crop_prob = results['predictions']['crop'][i]['probability']
             crop_pred = results['predictions']['crop'][i]['prediction']
             
             if crop_pred:
-                if crop_prob > 0.8:
-                    penalty = CROP_PENALTIES['high']
-                elif crop_prob > 0.5:
-                    penalty = CROP_PENALTIES['medium']
-                else:
-                    penalty = CROP_PENALTIES['low']
+                penalty = calculate_dynamic_penalty('crop', crop_prob)
                 segment_score -= penalty
             
             # Ensure score doesn't go below 0

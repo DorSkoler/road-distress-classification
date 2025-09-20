@@ -11,57 +11,53 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Dataset Composition}{2}{subsection.3.1}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Comprehensive dataset organization showing road-based splitting across 91 unique roads to prevent data leakage and ensure realistic evaluation conditions.}}{2}{figure.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Label Distribution and Class Imbalance}{2}{subsection.3.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Class distribution across the three classification tasks showing varying degrees of imbalance that drove our per-class threshold optimization approach.}}{3}{figure.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Road Section Annotation Process}{3}{subsection.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Experimental Evolution}{4}{subsection.3.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Architecture and Training}{4}{section.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Individual Model Architectures}{4}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Training Configuration}{5}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Training Configuration}{4}{subsection.4.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Two-Model Ensemble Strategy}{5}{subsection.4.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Two-model ensemble architecture with per-class threshold optimization}}{5}{figure.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Comprehensive Performance Analysis}{6}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Global Performance Metrics}{6}{subsection.5.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Global performance metrics showing ROC AUC and Average Precision scores across all classification tasks, demonstrating varying degrees of class separability.}}{6}{figure.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Operational Performance Analysis}{7}{subsection.5.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Operational performance analysis showing expected alert rates and miss rates per 1,000 processed images for practical deployment scenarios.}}{7}{figure.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Alternative Threshold Strategies}{7}{subsection.5.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Comparison of three operational threshold strategies (balanced, high-recall, high-precision) showing performance trade-offs and recommended use cases.}}{8}{figure.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Results and Breakthrough Discovery}{8}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Individual Model Performance}{8}{subsection.6.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Individual model comparison}}{8}{table.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Comprehensive comparison of individual models showing complementary strengths between pure feature learning (Model B) and enhanced preprocessing (Model H) approaches.}}{9}{figure.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}The Per-Class Threshold Breakthrough}{9}{subsection.6.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Detailed per-class performance breakdown for both models showing why ensemble combination outperforms individual approaches.}}{10}{figure.8}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Dramatic visualization of the per-class threshold breakthrough showing 28.7\% accuracy improvement from threshold optimization across all classification tasks.}}{10}{figure.9}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Balanced per-class thresholds for general monitoring}}{11}{table.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Comprehensive per-class threshold optimization results showing how different distress types require fundamentally different decision sensitivity levels.}}{11}{figure.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Final Ensemble Results}{11}{subsection.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Technical Implementation}{12}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Deployment Pipeline}{12}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Performance Characteristics}{12}{subsection.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Road Health Scoring System}{12}{subsection.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.1}Individual Segment Scoring}{12}{subsubsection.7.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.2}Penalty Hierarchy Rationale}{13}{subsubsection.7.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.3}Overall Road Score Calculation}{13}{subsubsection.7.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.4}Health Categorization}{13}{subsubsection.7.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.3.5}Operational Analytics}{13}{subsubsection.7.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Experimental Evolution and Methodology}{14}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Comprehensive Experimental Timeline}{14}{subsection.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.1}Phase 1: Initial Development (April 8, 2025)}{14}{subsubsection.8.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.2}Phase 2: Model Training Foundation (April 27, 2025)}{14}{subsubsection.8.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.3}Phase 3: Mask-Enhanced Training (May 10, 2025)}{15}{subsubsection.8.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.4}Phase 4: Smart Data Splitting (June 28, 2025)}{15}{subsubsection.8.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.5}Phase 5: Hybrid Training Approach (July 5, 2025)}{15}{subsubsection.8.1.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.6}Phase 6: Ensemble Breakthrough (August 1, 2025)}{16}{subsubsection.8.1.6}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Comprehensive experimental evolution timeline showing systematic methodology progression from initial development through breakthrough discovery.}}{16}{figure.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Methodological Insights}{17}{subsection.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Data Quality and Annotation}{17}{subsubsection.8.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.2}Architecture Selection}{17}{subsubsection.8.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.3}Training Strategy Evolution}{17}{subsubsection.8.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.4}Evaluation Methodology}{17}{subsubsection.8.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9}Discussion and Impact}{17}{section.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Scientific Contributions}{17}{subsection.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Practical Implications}{18}{subsection.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Limitations and Future Work}{18}{subsection.9.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{18}{section.10}\protected@file@percent }
-\gdef \@abspage@last{19}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Two-model ensemble architecture with per-class threshold optimization}}{5}{figure.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Comprehensive Performance Analysis}{5}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Global Performance Metrics}{5}{subsection.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Global performance metrics showing ROC AUC and Average Precision scores across all classification tasks, demonstrating varying degrees of class separability.}}{6}{figure.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Operational Performance Analysis}{6}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Alternative Threshold Strategies}{6}{subsection.5.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Comparison of three operational threshold strategies (balanced, high-recall, high-precision) showing performance trade-offs and recommended use cases.}}{7}{figure.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results and Discoveries}{7}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Individual Model Performance}{7}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Individual model comparison}}{7}{table.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Comprehensive comparison of individual models showing complementary strengths between pure feature learning (Model B) and enhanced preprocessing (Model H) approaches.}}{8}{figure.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}The Per-Class Threshold}{8}{subsection.6.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Balanced per-class thresholds for general monitoring}}{8}{table.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Dramatic visualization of the per-class threshold showing 28.7\% accuracy improvement from threshold optimization across all classification tasks.}}{9}{figure.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Final Ensemble Results}{9}{subsection.6.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Comprehensive per-class threshold optimization results showing how different distress types require fundamentally different decision sensitivity levels.}}{10}{figure.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Technical Implementation}{10}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Deployment Pipeline}{10}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Road Health Scoring System}{10}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.1}Individual Segment Scoring}{11}{subsubsection.7.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.2}Penalty Hierarchy Rationale}{11}{subsubsection.7.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.3}Overall Road Score Calculation}{11}{subsubsection.7.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.4}Health Categorization}{12}{subsubsection.7.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.5}Operational Analytics}{12}{subsubsection.7.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Experimental Evolution and Methodology}{12}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Comprehensive Experimental Timeline}{12}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.1}Phase 1: Initial Development (April 8, 2025)}{12}{subsubsection.8.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.2}Phase 2: Model Training Foundation (April 27, 2025)}{13}{subsubsection.8.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.3}Phase 3: Mask-Enhanced Training (May 10, 2025)}{13}{subsubsection.8.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.4}Phase 4: Smart Data Splitting (June 28, 2025)}{13}{subsubsection.8.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.5}Phase 5: Hybrid Training Approach (July 5, 2025)}{14}{subsubsection.8.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.1.6}Phase 6: Ensemble Results (August 1, 2025)}{14}{subsubsection.8.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Methodological Insights}{14}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.1}Data Quality and Annotation}{14}{subsubsection.8.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.2}Architecture Selection}{14}{subsubsection.8.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Comprehensive experimental evolution timeline showing systematic methodology progression from initial development through results discovery.}}{15}{figure.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.3}Training Strategy Evolution}{15}{subsubsection.8.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {8.2.4}Evaluation Methodology}{15}{subsubsection.8.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Discussion and Impact}{15}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Scientific Contributions}{15}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Practical Implications}{16}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Limitations and Future Work}{16}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{16}{section.10}\protected@file@percent }
+\gdef \@abspage@last{18}

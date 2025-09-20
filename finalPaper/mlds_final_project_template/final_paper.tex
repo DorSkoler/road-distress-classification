@@ -80,7 +80,7 @@ Road infrastructure monitoring faces a critical challenge: how to automatically 
 
 This project began with a deceptively simple goal—classify road images into three categories: damage, occlusion, and crop issues. However, what we discovered through systematic experimentation transformed our understanding of multi-label classification for infrastructure monitoring.
 
-Our breakthrough came not from architectural innovations alone, but from recognizing that different types of distress require fundamentally different decision strategies. Through systematic threshold optimization, we developed balanced per-class thresholds that achieve robust performance across diverse conditions: damage (0.50), occlusion (0.40), and crop (0.49). This approach prioritizes practical deployment readiness with consistent precision-recall balance rather than peak accuracy metrics.
+Our results came not from architectural innovations alone, but from recognizing that different types of distress require fundamentally different decision strategies. Through systematic threshold optimization, we developed balanced per-class thresholds that achieve robust performance across diverse conditions: damage (0.50), occlusion (0.40), and crop (0.49). This approach prioritizes practical deployment readiness with consistent precision-recall balance rather than peak accuracy metrics.
 
 The journey involved extensive experimentation across multiple model variants, preprocessing techniques, and ensemble strategies. A crucial methodological component was the development of a two-stage annotation process combining automated road segmentation with manual polygon-based refinement, enabling precise road boundary delineation for mask-enhanced models. Our final system combines two complementary EfficientNet-B3 models in a carefully calibrated ensemble that leverages the strengths of both pure feature learning and enhanced preprocessing approaches.
 
@@ -112,7 +112,7 @@ Our dataset comprises 18,173 road images systematically collected and annotated 
 
 \subsection{Label Distribution and Class Imbalance}
 
-The dataset exhibits significant class imbalance, which proved crucial to our eventual breakthrough in per-class threshold optimization:
+The dataset exhibits significant class imbalance, which proved crucial to our eventual results in per-class threshold optimization:
 
 \textbf{Damage Classification:}
 \begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
@@ -133,25 +133,6 @@ The dataset exhibits significant class imbalance, which proved crucial to our ev
 \end{itemize}
 
 The severe imbalance in crop detection (4.3\% positive examples) and moderate imbalance in occlusion detection (19.1\%) drove our exploration of adaptive threshold strategies.
-
-\begin{figure}[!htb]
-\centering
-\begin{minipage}{0.32\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/damage_classification_distribution.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.32\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/occlusion_classification_distribution.png}
-\end{minipage}
-\hfill
-\begin{minipage}{0.32\textwidth}
-\centering
-\includegraphics[width=\textwidth]{images/crop_classification_distribution.png}
-\end{minipage}
-\caption{Class distribution across the three classification tasks showing varying degrees of imbalance that drove our per-class threshold optimization approach.}
-\end{figure}
 
 \subsection{Road Section Annotation Process}
 
@@ -198,7 +179,7 @@ Our methodology evolved through systematic experimentation across multiple model
 \textbf{Model D}: EfficientNet-B3 + augmentation + partial masking (0.5 weight, using annotated boundaries)
 \textbf{Model H}: EfficientNet-B3 + CLAHE preprocessing + partial masking (using annotated boundaries)
 
-Models A, C, D, and H leveraged our precisely annotated road boundaries to focus learning on road surface conditions while filtering out irrelevant background features. Through extensive evaluation, Models B and H emerged as our top performers, representing complementary approaches: pure feature learning versus enhanced preprocessing with road masking. This led to our breakthrough two-model ensemble approach.
+Models A, C, D, and H leveraged our precisely annotated road boundaries to focus learning on road surface conditions while filtering out irrelevant background features. Through extensive evaluation, Models B and H emerged as our top performers, representing complementary approaches: pure feature learning versus enhanced preprocessing with road masking. This led to our results two-model ensemble approach.
 
 \section{Architecture and Training}
 
@@ -234,7 +215,7 @@ Both models were trained with identical hyperparameters:
 
 \subsection{Two-Model Ensemble Strategy}
 
-Our breakthrough approach combines Models B and H using equal weighting (0.5/0.5) with per-class threshold optimization:
+Our approach combines Models B and H using equal weighting (0.5/0.5) with per-class threshold optimization:
 
 \begin{figure}[!htb]
   \centering
@@ -296,12 +277,6 @@ Our balanced threshold configuration provides the following operational characte
 
 This alert distribution enables practical deployment scenarios where different response strategies can be applied based on class-specific confidence levels and operational requirements.
 
-\begin{figure}[!htb]
-\centering
-\includegraphics[width=0.85\textwidth]{images/operational_performance_analysis.png}
-\caption{Operational performance analysis showing expected alert rates and miss rates per 1,000 processed images for practical deployment scenarios.}
-\end{figure}
-
 \subsection{Alternative Threshold Strategies}
 
 Beyond our balanced approach, we identified two additional operational modes:
@@ -326,17 +301,11 @@ Beyond our balanced approach, we identified two additional operational modes:
 \caption{Comparison of three operational threshold strategies (balanced, high-recall, high-precision) showing performance trade-offs and recommended use cases.}
 \end{figure}
 
-\section{Results and Breakthrough Discovery}
+\section{Results and Discoveries}
 
 \subsection{Individual Model Performance}
 
 Our systematic evaluation revealed complementary strengths between our two best models:
-
-\begin{figure}[!htb]
-\centering
-\includegraphics[width=0.85\textwidth]{images/model_comparison_detailed.png}
-\caption{Comprehensive comparison of individual models showing complementary strengths between pure feature learning (Model B) and enhanced preprocessing (Model H) approaches.}
-\end{figure}
 
 \begin{table}[!h]
 \centering
@@ -365,20 +334,21 @@ Model H & 0.781 & 2.99 & 37 \\
 \item Crop: Precision 97.4\%, Recall 94.4\%, F1 95.9\%
 \end{itemize}
 
+
 \begin{figure}[!htb]
 \centering
-\includegraphics[width=0.85\textwidth]{images/individual_model_breakdown.png}
-\caption{Detailed per-class performance breakdown for both models showing why ensemble combination outperforms individual approaches.}
+\includegraphics[width=0.85\textwidth]{images/model_comparison_detailed.png}
+\caption{Comprehensive comparison of individual models showing complementary strengths between pure feature learning (Model B) and enhanced preprocessing (Model H) approaches.}
 \end{figure}
 
-\subsection{The Per-Class Threshold Breakthrough}
+\subsection{The Per-Class Threshold}
 
 The critical discovery that transformed our project came through systematic threshold optimization. Standard ensemble approaches using uniform 0.5 thresholds achieved only 63.3\% accuracy. However, optimizing thresholds per class revealed fundamental insights about road distress detection:
 
 \begin{figure}[!htb]
 \centering
 \includegraphics[width=0.85\textwidth]{images/breakthrough_analysis.png}
-\caption{Dramatic visualization of the per-class threshold breakthrough showing 28.7\% accuracy improvement from threshold optimization across all classification tasks.}
+\caption{Dramatic visualization of the per-class threshold showing 28.7\% accuracy improvement from threshold optimization across all classification tasks.}
 \end{figure}
 
 \begin{table}[!h]
@@ -436,42 +406,24 @@ Our production system includes comprehensive inference capabilities:
 \item \textbf{Configurable Thresholds}: Dynamic adjustment of per-class decision boundaries
 \end{itemize}
 
-\subsection{Performance Characteristics}
-
-\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=3pt]
-\item \textbf{Inference Speed}: ~50ms per image on RTX 4070 Ti Super
-\item \textbf{Memory Usage}: ~4GB GPU memory for dual model ensemble
-\item \textbf{Scalability}: Supports batch processing with configurable parallelization
-\item \textbf{Reliability}: Comprehensive error handling and fallback mechanisms
-\end{itemize}
-
 \subsection{Road Health Scoring System}
 
 Beyond individual image classification, our system provides comprehensive road health assessment through a novel scoring algorithm that aggregates segment-level predictions into actionable road condition metrics.
 
 \subsubsection{Individual Segment Scoring}
 
-Each road segment begins with a perfect health score of 100 points. The algorithm applies confidence-weighted penalties based on our three classification categories, reflecting the relative operational impact of different distress types:
+Each road segment begins with a perfect health score of 100 points. The algorithm applies dynamic confidence-proportional penalties based on our three classification categories, reflecting both the operational impact of different distress types and the model's certainty level:
 
-\textbf{Damage Detection Penalties} (Primary Factor):
-\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
-\item High Confidence (>0.8): -50 points
-\item Medium Confidence (0.5-0.8): -30 points
-\item Low Confidence (<0.5, prediction=true): -15 points
-\end{itemize}
+\textbf{Dynamic Penalty System:}
+The penalty for each positive prediction scales smoothly from the decision threshold to maximum confidence (1.0), ensuring that higher confidence levels result in proportionally higher penalties. The penalty calculation follows:
 
-\textbf{Occlusion Detection Penalties} (Secondary Factor):
-\begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
-\item High Confidence (>0.8): -20 points
-\item Medium Confidence (0.5-0.8): -12 points
-\item Low Confidence (<0.5, prediction=true): -5 points
-\end{itemize}
+$$\text{Penalty} = \frac{\text{confidence} - \text{threshold}}{1.0 - \text{threshold}} \times \text{Max Penalty}$$
 
-\textbf{Crop/Quality Issue Penalties} (Tertiary Factor):
+\textbf{Class-Specific Maximum Penalties:}
 \begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
-\item High Confidence (>0.8): -15 points
-\item Medium Confidence (0.5-0.8): -8 points
-\item Low Confidence (<0.5, prediction=true): -3 points
+\item \textbf{Damage Detection}: Up to -75 points (threshold: 0.50)
+\item \textbf{Occlusion Detection}: Up to -20 points (threshold: 0.40) 
+\item \textbf{Crop/Quality Issues}: Up to -5 points (threshold: 0.49)
 \end{itemize}
 
 \subsubsection{Penalty Hierarchy Rationale}
@@ -479,9 +431,11 @@ Each road segment begins with a perfect health score of 100 points. The algorith
 The hierarchical penalty structure reflects practical deployment considerations:
 
 \begin{itemize}[itemsep=1pt,parsep=0pt,topsep=3pt]
-\item \textbf{Damage penalties} are highest because they represent actual infrastructure problems requiring immediate maintenance attention
-\item \textbf{Occlusion penalties} are moderate as they indicate assessment uncertainty but don't necessarily imply structural damage
-\item \textbf{Crop penalties} are lowest since they primarily affect image quality while still allowing partial road assessment
+\item \textbf{Damage penalties} are highest (up to -75 points) because they represent actual infrastructure problems requiring immediate maintenance attention
+\item \textbf{Occlusion penalties} are moderate (up to -20 points) as they indicate assessment uncertainty but don't necessarily imply structural damage
+\item \textbf{Crop penalties} are lowest (up to -5 points) since they primarily affect image quality while still allowing partial road assessment
+\item \textbf{Dynamic scaling} ensures that penalty severity reflects model confidence: a confidence of 0.80 vs 0.81 results in measurably different penalties, providing fine-grained assessment granularity
+\item \textbf{Maximum penalty limits} prevent any single class from dominating the scoring, maintaining balanced multi-factor assessment
 \end{itemize}
 
 \subsubsection{Overall Road Score Calculation}
@@ -508,7 +462,7 @@ Numerical scores map to qualitative health categories for operational decision-m
 \item \textbf{Good (75-89)}: Minor issues that don't significantly impact road safety
 \item \textbf{Fair (60-74)}: Moderate issues requiring monitoring and planned maintenance
 \item \textbf{Poor (40-59)}: Significant problems needing prioritized attention
-\item \textbf{Critical (<40)}: Severe issues requiring immediate intervention
+\item \textbf{Critical ($<$40)}: Severe issues requiring immediate intervention
 \end{itemize}
 
 \subsubsection{Operational Analytics}
@@ -528,7 +482,7 @@ This scoring methodology bridges the gap between individual image classification
 
 \subsection{Comprehensive Experimental Timeline}
 
-Our research methodology involved systematic experimentation across multiple phases, each building upon previous insights to achieve our final breakthrough. This section documents the complete experimental journey that led to our balanced ensemble approach.
+Our research methodology involved systematic experimentation across multiple phases, each building upon previous insights to achieve our final results. This section documents the complete experimental journey that led to our balanced ensemble approach.
 
 \subsubsection{Phase 1: Initial Development (April 8, 2025)}
 
@@ -579,7 +533,7 @@ Our research methodology involved systematic experimentation across multiple pha
 \textbf{Methodology}:
 \begin{itemize}[itemsep=1pt,parsep=0pt,topsep=2pt]
 \item Road-based splitting with balanced label distribution across 91 unique roads
-\item Quality filtering removing images with <15\% road coverage
+\item Quality filtering removing images with $<$15\% road coverage
 \item Conservative augmentation pipeline generating 4x data diversity
 \item A/B testing framework for masked vs. unmasked approaches
 \end{itemize}
@@ -608,7 +562,7 @@ Our research methodology involved systematic experimentation across multiple pha
 
 \textbf{Key Findings}: Models B and H emerged as top performers, representing complementary approaches of pure feature learning versus enhanced preprocessing.
 
-\subsubsection{Phase 6: Ensemble Breakthrough (August 1, 2025)}
+\subsubsection{Phase 6: Ensemble Results (August 1, 2025)}
 
 \textbf{Objective}: Optimize ensemble performance through systematic threshold analysis.
 
@@ -625,7 +579,7 @@ Our research methodology involved systematic experimentation across multiple pha
 \begin{figure}[!htb]
 \centering
 \includegraphics[width=0.9\textwidth]{images/experimental_timeline_detailed.png}
-\caption{Comprehensive experimental evolution timeline showing systematic methodology progression from initial development through breakthrough discovery.}
+\caption{Comprehensive experimental evolution timeline showing systematic methodology progression from initial development through results discovery.}
 \end{figure}
 
 \subsection{Methodological Insights}
@@ -680,7 +634,7 @@ While our results are promising, several areas merit continued investigation:
 
 \section{Conclusion}
 
-This project demonstrates that systematic experimental methodology combined with innovative threshold optimization can achieve breakthrough performance in multi-label classification tasks. Our journey from 63.3\% to 92\% accuracy illustrates the importance of looking beyond architectural innovations to fundamental assumptions about decision making in machine learning systems.
+This project demonstrates that systematic experimental methodology combined with innovative threshold optimization can achieve performance in multi-label classification tasks. Our journey from 63.3\% to 92\% accuracy illustrates the importance of looking beyond architectural innovations to fundamental assumptions about decision making in machine learning systems.
 
 The key insight—that different types of visual conditions require different sensitivity levels—may have broad applicability beyond road distress detection. Our per-class threshold optimization approach, combined with complementary ensemble design, provides a practical framework for tackling class imbalance challenges in real-world computer vision applications.
 
