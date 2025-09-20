@@ -26,7 +26,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 def create_clean_breakthrough_analysis():
     """Create threshold comparison visualization without breakthrough labels"""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 10))
     
     # Main threshold comparison
     approaches = ['Standard Uniform\nThresholds (τ=0.5)', 'Optimized Per-Class\nThresholds']
@@ -38,8 +38,8 @@ def create_clean_breakthrough_analysis():
     
     ax1.set_ylabel('Overall System Accuracy (%)', fontweight='bold', fontsize=13)
     ax1.set_xlabel('Threshold Strategy', fontweight='bold', fontsize=13)
-    ax1.set_title('Per-Class Threshold Optimization Results\nComparison of Threshold Strategies', 
-                  fontweight='bold', fontsize=14)
+    ax1.set_title('Per-Class Threshold Optimization Results', 
+                  fontweight='bold', fontsize=14, pad=20)
     ax1.set_ylim(0, 100)
     ax1.grid(True, alpha=0.3, axis='y')
     
@@ -66,7 +66,7 @@ def create_clean_breakthrough_analysis():
     
     ax2.set_ylabel('Class-Specific Accuracy (%)', fontweight='bold', fontsize=13)
     ax2.set_xlabel('Classification Task', fontweight='bold', fontsize=13)
-    ax2.set_title('Per-Class Accuracy Improvement\nImpact of Threshold Optimization', fontweight='bold')
+    ax2.set_title('Per-Class Accuracy Improvement', fontweight='bold', fontsize=14, pad=20)
     ax2.set_xticks(x)
     ax2.set_xticklabels(classes_detailed)
     ax2.legend(loc='upper left')
@@ -95,7 +95,7 @@ def create_clean_breakthrough_analysis():
              bbox=dict(boxstyle="round,pad=0.5", facecolor='lightblue', alpha=0.7))
     
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.15)
+    plt.subplots_adjust(bottom=0.18, top=0.90)
     
     # Save the clean version
     filepath = os.path.join(output_dir, 'breakthrough_analysis.png')
