@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex final_paper"] 1761393991.68942 "final_paper.aux" "final_paper.bbl" "final_paper" 1761393995.33627 0
+["bibtex final_paper"] 1761394590.7211 "final_paper.aux" "final_paper.bbl" "final_paper" 1761395258.42144 0
   "./references.bib" 1757765199.55022 1459 afac9a2e127f6e0845ba02db79a3bccb ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "final_paper.aux" 1761393995.04537 7408 7628a811075741e1e743ee767f360cf7 "pdflatex"
+  "final_paper.aux" 1761395258.12642 7409 a74a6f31fdb2e3c92c1a05e9b08ef23a "pdflatex"
   (generated)
   "final_paper.bbl"
   "final_paper.blg"
   (rewritten before read)
-["pdflatex"] 1761393991.80747 "/Users/guygazpan/Cursor/road-distress-classification-1/finalPaper/mlds_final_project_template/final_paper.tex" "final_paper.pdf" "final_paper" 1761393995.33641 0
-  "/Users/guygazpan/Cursor/road-distress-classification-1/finalPaper/mlds_final_project_template/final_paper.tex" 1761383947.09966 44159 4464a8a6bdccf5d13d39e7584c99d1c2 ""
+["pdflatex"] 1761395254.82528 "/Users/guygazpan/Cursor/road-distress-classification-1/finalPaper/mlds_final_project_template/final_paper.tex" "final_paper.pdf" "final_paper" 1761395258.42161 0
+  "/Users/guygazpan/Cursor/road-distress-classification-1/finalPaper/mlds_final_project_template/final_paper.tex" 1761395254.69838 44145 311bba7f457a4560663306ffa0961953 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm" 1136768653 1536 74b7293ec3713bb7fdca8dd1bd1f469c ""
@@ -173,10 +173,10 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1756298503 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1756298376 3345741 990abe949db7fe8ffd23c5116a0f9925 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "final_paper.aux" 1761393995.04537 7408 7628a811075741e1e743ee767f360cf7 "pdflatex"
-  "final_paper.bbl" 1761393991.80455 1110 170a62819dcbe76c8fe5388208f13c54 "bibtex final_paper"
-  "final_paper.out" 1761393995.04636 6834 1cbc44b76819fc56b3d2353b204f3d02 "pdflatex"
-  "final_paper.tex" 1761383947.09966 44159 4464a8a6bdccf5d13d39e7584c99d1c2 ""
+  "final_paper.aux" 1761395258.12642 7409 a74a6f31fdb2e3c92c1a05e9b08ef23a "pdflatex"
+  "final_paper.bbl" 1761394590.85888 1110 170a62819dcbe76c8fe5388208f13c54 "bibtex final_paper"
+  "final_paper.out" 1761395258.12753 6839 9e0d3f65d6cf57182502a23699062b8e "pdflatex"
+  "final_paper.tex" 1761395254.69838 44145 311bba7f457a4560663306ffa0961953 ""
   "images/breakthrough_analysis.png" 1761393689.1167 306939 ac6309a9d5998ea956da59d6f12c0ed2 ""
   "images/dataset_split.png" 1757764545 104436 a34590e2189e8d6ab15b5a8bf460b6a6 ""
   "images/model_comparison_detailed.png" 1761393905.73019 411262 e4fd9b4398a24a247bfcf4324dd19fee ""

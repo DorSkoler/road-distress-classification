@@ -71,16 +71,16 @@
 {\small \today}\\[2em]
 
 \begin{abstract}
-This project presents a comprehensive approach to automated road distress classification, achieving balanced performance through innovative ensemble learning and per-class threshold optimization. We discovered that combining two complementary EfficientNet-B3 models—one focused on robust feature extraction and another enhanced with CLAHE preprocessing and road masking derived from 187 manually annotated images—significantly outperforms individual approaches. Our key innovation lies in optimizing decision thresholds per class for general monitoring: damage (0.50), occlusion (0.40), and crop (0.49), achieving precision-recall balanced performance with accuracies of 79\%, 93\%, and 99\% respectively. The system processes 18,173 road images across three critical conditions and demonstrates that ensemble methods with adaptive thresholding provide robust real-world performance. Our final deployment pipeline includes real-time inference capabilities, Grad-CAM visualizations, and a comprehensive web interface suitable for practical road monitoring applications.
+This project presents a comprehensive approach to automated road distress classification, achieving balanced performance through innovative ensemble learning and per-class threshold optimization. We discovered that combining two complementary EfficientNet-B3 models one focused on robust feature extraction and another enhanced with CLAHE preprocessing and road masking derived from 187 manually annotated images significantly outperforms individual approaches. Our key innovation lies in optimizing decision thresholds per class for general monitoring: damage (0.50), occlusion (0.40), and crop (0.49), achieving precision-recall balanced performance with accuracies of 79\%, 93\%, and 99\% respectively. The system processes 18,173 road images across three critical conditions and demonstrates that ensemble methods with adaptive thresholding provide robust real-world performance. Our final deployment pipeline includes real-time inference capabilities, Grad-CAM visualizations, and a comprehensive web interface suitable for practical road monitoring applications.
 \end{abstract}
 
 \end{titlepage}
 
 \section{Introduction}
 
-Road infrastructure monitoring faces a critical challenge: how to automatically detect and classify different types of distress conditions with the accuracy needed for real-world deployment. Traditional computer vision approaches often struggle with class imbalance, varying environmental conditions, and the need to distinguish between multiple simultaneous conditions in a single image.
+Road infrastructure monitoring faces a critical challenge: how to automatically detect and classify different types of distress conditions with the accuracy needed for real world deployment. Traditional computer vision approaches often struggle with class imbalance, varying environmental conditions, and the need to distinguish between multiple simultaneous conditions in a single image.
 
-This project began with a deceptively simple goal—classify road images into three categories: damage, occlusion, and crop issues. However, what we discovered through systematic experimentation transformed our understanding of multi-label classification for infrastructure monitoring.
+This project began with a deceptively simple goal - to classify road images into three categories: damage, occlusion, and crop issues. However, what we discovered through systematic experimentation transformed our understanding of multi-label classification for infrastructure monitoring.
 
 Our results came not from architectural innovations alone, but from recognizing that different types of distress require fundamentally different decision strategies. Through systematic threshold optimization, we developed balanced per-class thresholds that achieve robust performance across diverse conditions: damage (0.50), occlusion (0.40), and crop (0.49). This approach prioritizes practical deployment readiness with consistent precision-recall balance rather than peak accuracy metrics.
 
@@ -404,7 +404,7 @@ A counterintuitive yet crucial discovery emerged from our systematic evaluation:
 
 \textit{Partial Masking Offers Marginal Improvement:} Models D and H use partial masking (0.5 weight for non-road regions), which preserves some background context while emphasizing road areas. This approach performs better than full masking but still underperforms pure image-based learning, suggesting that even weighted suppression of background information hampers classification performance.
 
-\textit{Data Augmentation is Essential:} The stark contrast between Model A (34.4\% F1) and Model C (78.7\% F1)—both using full masking but differing only in augmentation—demonstrates that data augmentation provides far greater performance gains than segmentation strategies. Augmentation helps models learn invariant features across diverse lighting, orientation, and quality conditions.
+\textit{Data Augmentation is Essential:} The stark contrast between Model A (34.4\% F1) and Model C (78.7\% F1) both using full masking but differing only in augmentation demonstrates that data augmentation provides far greater performance gains than segmentation strategies. Augmentation helps models learn invariant features across diverse lighting, orientation, and quality conditions.
 
 \textbf{Why Model H Remains Valuable Despite Lower F1:}
 
@@ -424,7 +424,7 @@ This analysis demonstrates that successful road distress classification requires
 \caption{Comprehensive comparison of individual models showing complementary strengths between pure feature learning (Model B) and enhanced preprocessing (Model H) approaches.}
 \end{figure}
 
-\subsection{The Per-Class Threshold}
+\subsection{The Per-Class Thresholds}
 
 The critical discovery that transformed our project came through systematic threshold optimization. Standard ensemble approaches using uniform 0.5 thresholds achieved only 63.3\% accuracy. However, optimizing thresholds per class revealed fundamental insights about road distress detection:
 
@@ -452,9 +452,9 @@ Crop & 0.49 & 0.99 & 0.86 & 0.99 \\
 
 \textbf{Damage Detection (0.50 threshold):} The balanced threshold provides optimal trade-off between precision (0.54) and recall (0.66), achieving 79\% accuracy for general monitoring scenarios while maintaining reasonable detection sensitivity.
 
-\textbf{Occlusion Detection (0.40 threshold):} The lowered threshold captures subtle environmental factors—shadows, vegetation, or debris—achieving high precision (0.80) and good recall (0.75) with 93\% accuracy, significantly outperforming standard 0.5 thresholds.
+\textbf{Occlusion Detection (0.40 threshold):} The lowered threshold captures subtle environmental factors shadows, vegetation, or debris achieving high precision (0.80) and good recall (0.75) with 93\% accuracy, significantly outperforming standard 0.5 thresholds.
 
-\textbf{Crop Detection (0.49 threshold):} The near-standard threshold achieves exceptional precision (0.99) and strong recall (0.86) with 99\% accuracy, effectively identifying incomplete road views while minimizing false alarms.
+\textbf{Crop Detection (0.49 threshold):} The near standard threshold achieves exceptional precision (0.99) and strong recall (0.86) with 99\% accuracy, effectively identifying incomplete road views while minimizing false alarms.
 
 \begin{figure}[!htb]
 \centering
@@ -618,7 +618,7 @@ While our results are promising, several areas merit continued investigation:
 
 \section{Conclusion}
 
-This work demonstrates the value of systematic experimental methodology and challenges conventional assumptions in domain-specific computer vision. Through comprehensive evaluation of five model variants, we achieved 92\% accuracy on multi-label road distress classification—a 28.7 percentage point improvement over baseline approaches.
+This work demonstrates the value of systematic experimental methodology and challenges conventional assumptions in domain-specific computer vision. Through comprehensive evaluation of five model variants, we achieved 92\% accuracy on multi-label road distress classification a 28.7 percentage point improvement over baseline approaches.
 
 Our key contributions include:
 
@@ -630,7 +630,7 @@ Our key contributions include:
 
 \textbf{Reproducible Methodology:} Road-based data splitting prevents data leakage, systematic model variant comparison isolates preprocessing effects, and transparent documentation of parameter selection (including acknowledged limitations of scoring system validation) enables reproducibility and critical evaluation.
 
-The complete system—two-model ensemble, per-class threshold optimization, confidence-proportional scoring, and deployment pipeline—represents a production-ready solution for automated road infrastructure monitoring. With 92\% accuracy, real-time processing capabilities, and comprehensive road health scoring, this work bridges the gap between research and practical deployment in critical infrastructure assessment.
+The complete system two-model ensemble, per-class threshold optimization, confidence proportional scoring, and deployment pipeline represents a production-ready solution for automated road infrastructure monitoring. With 92\% accuracy, real-time processing capabilities, and comprehensive road health scoring, this work bridges the gap between research and practical deployment in critical infrastructure assessment.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
