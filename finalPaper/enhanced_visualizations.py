@@ -167,7 +167,7 @@ def create_dataset_split_detailed():
 # 3. Model Architecture Comparison
 def create_model_comparison_detailed():
     """Create detailed model comparison with multiple metrics"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 14))
     
     models = ['Model B\n(Pure Features)', 'Model H\n(Enhanced Preprocessing)']
     colors = ['#3498db', '#e74c3c']
@@ -192,6 +192,7 @@ def create_model_comparison_detailed():
     ax2.set_xlabel('Model Architecture', fontweight='bold', fontsize=12)
     ax2.set_title('Training Efficiency Comparison', fontweight='bold')
     ax2.grid(True, alpha=0.3, axis='y')
+    ax2.set_ylim(0, 3.5)
     
     for bar, time in zip(bars2, training_times):
         ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.1,
@@ -204,6 +205,8 @@ def create_model_comparison_detailed():
     ax3.set_xlabel('Model Architecture', fontweight='bold', fontsize=12)
     ax3.set_title('Convergence Speed Comparison', fontweight='bold')
     ax3.grid(True, alpha=0.3, axis='y')
+    ax3.set_ylim(0, 40)
+
     
     for bar, epoch in zip(bars3, epochs):
         ax3.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.8,
@@ -231,7 +234,7 @@ def create_model_comparison_detailed():
     ax4.grid(True, alpha=0.3, axis='y')
     ax4.set_ylim(0, 1.0)
     
-    plt.suptitle('Individual Model Performance Analysis\nComplementary Architectures for Ensemble Learning', 
+    plt.suptitle('Individual Model Performance Analysis', 
                  fontsize=16, fontweight='bold')
     plt.tight_layout()
     save_plot('model_comparison_detailed.png')
@@ -239,37 +242,18 @@ def create_model_comparison_detailed():
 # 4. Threshold Optimization Results
 def create_threshold_optimization_analysis():
     """Create comprehensive threshold optimization analysis"""
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
+    fig, (ax2, ax3, ax4) = plt.subplots(1, 3, figsize=(16, 8))
     
     classes = ['Damage\nDetection', 'Occlusion\nDetection', 'Crop\nDetection']
     class_colors = ['#FF6B6B', '#FFB347', '#DDA0DD']
-    
-    # Optimized thresholds with explanation
-    thresholds = [0.50, 0.40, 0.49]
-    bars1 = ax1.bar(classes, thresholds, color=class_colors, alpha=0.8, 
-                    edgecolor='black', linewidth=2)
-    ax1.set_ylabel('Decision Threshold Value', fontweight='bold', fontsize=12)
-    ax1.set_xlabel('Classification Task', fontweight='bold', fontsize=12)
-    ax1.set_title('Optimized Per-Class Decision Thresholds\nBalanced for General Road Monitoring', 
-                  fontweight='bold')
-    ax1.set_ylim(0, 0.6)
-    ax1.grid(True, alpha=0.3, axis='y')
-    
-    # Add threshold annotations
-    threshold_notes = ['Balanced\n(τ=0.50)', 'Sensitive\n(τ=0.40)', 'Near-Standard\n(τ=0.49)']
-    for bar, thresh, note in zip(bars1, thresholds, threshold_notes):
-        ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.02,
-                f'{thresh:.2f}', ha='center', va='bottom', fontweight='bold', fontsize=12)
-        ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2,
-                note, ha='center', va='center', fontweight='bold', fontsize=10, color='white')
-    
+
     # Precision comparison
     precisions = [0.54, 0.80, 0.99]
     bars2 = ax2.bar(classes, precisions, color=class_colors, alpha=0.8, 
                     edgecolor='black', linewidth=2)
     ax2.set_ylabel('Precision Score', fontweight='bold', fontsize=12)
     ax2.set_xlabel('Classification Task', fontweight='bold', fontsize=12)
-    ax2.set_title('Precision by Classification Task\nTrue Positives / (True Positives + False Positives)', 
+    ax2.set_title('Precision by Classification Task', 
                   fontweight='bold')
     ax2.set_ylim(0, 1.1)
     ax2.grid(True, alpha=0.3, axis='y')
@@ -284,7 +268,7 @@ def create_threshold_optimization_analysis():
                     edgecolor='black', linewidth=2)
     ax3.set_ylabel('Recall Score', fontweight='bold', fontsize=12)
     ax3.set_xlabel('Classification Task', fontweight='bold', fontsize=12)
-    ax3.set_title('Recall by Classification Task\nTrue Positives / (True Positives + False Negatives)', 
+    ax3.set_title('Recall by Classification Task', 
                   fontweight='bold')
     ax3.set_ylim(0, 1.1)
     ax3.grid(True, alpha=0.3, axis='y')
@@ -299,7 +283,7 @@ def create_threshold_optimization_analysis():
                     edgecolor='black', linewidth=2)
     ax4.set_ylabel('Classification Accuracy', fontweight='bold', fontsize=12)
     ax4.set_xlabel('Classification Task', fontweight='bold', fontsize=12)
-    ax4.set_title('Final Classification Accuracy\n(True Positives + True Negatives) / Total Samples', 
+    ax4.set_title('Accuracy by Classification Task', 
                   fontweight='bold')
     ax4.set_ylim(0, 1.1)
     ax4.grid(True, alpha=0.3, axis='y')
@@ -308,7 +292,7 @@ def create_threshold_optimization_analysis():
         ax4.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 0.03,
                 f'{acc:.0%}', ha='center', va='bottom', fontweight='bold', fontsize=12)
     
-    plt.suptitle('Per-Class Threshold Optimization Results\nBalanced Performance for Production Deployment', 
+    plt.suptitle('Per-Class Threshold Optimization Results', 
                  fontsize=16, fontweight='bold')
     plt.tight_layout()
     save_plot('threshold_optimization_analysis.png')
@@ -410,7 +394,7 @@ def create_breakthrough_analysis():
     colors = ['#e74c3c', '#2ecc71']
     
     bars1 = ax1.bar(approaches, accuracies, color=colors, alpha=0.8, 
-                    edgecolor='black', linewidth=3, width=0.6)
+                    edgecolor='black', linewidth=1, width=0.6)
     
     ax1.set_ylabel('Overall System Accuracy (%)', fontweight='bold', fontsize=13)
     ax1.set_xlabel('Threshold Strategy', fontweight='bold', fontsize=13)
@@ -420,21 +404,15 @@ def create_breakthrough_analysis():
     ax1.grid(True, alpha=0.3, axis='y')
     
     # Add dramatic value labels
-    ax1.text(0, 66, '63.3%\nBaseline', ha='center', va='bottom', 
-            fontsize=14, fontweight='bold', color='darkred',
-            bbox=dict(boxstyle="round,pad=0.3", facecolor='white', alpha=0.9))
-    ax1.text(1, 95, '92.0%\n(+28.7% improvement)', ha='center', va='bottom', 
+    ax1.text(0, 66, '63.3%', ha='center', va='bottom', 
+            fontsize=14, fontweight='bold', color='black')
+    ax1.text(1, 95, '92.0% (+28.7% improvement)', ha='center', va='bottom', 
             fontsize=14, fontweight='bold', color='darkgreen',
             bbox=dict(boxstyle="round,pad=0.3", facecolor='lightyellow', alpha=0.9))
     
-    # Add breakthrough arrow
-    ax1.annotate('BREAKTHROUGH!', xy=(1, 85), xytext=(0.3, 75),
-                arrowprops=dict(arrowstyle='->', lw=3, color='red'),
-                fontsize=16, fontweight='bold', color='red',
-                bbox=dict(boxstyle="round,pad=0.4", facecolor='yellow', alpha=0.9))
     
     # Detailed breakdown by class
-    classes_detailed = ['Damage\nClassification', 'Occlusion\nClassification', 'Crop\nClassification']
+    classes_detailed = ['Damage', 'Occlusion', 'Crop']
     uniform_acc = [71, 89, 30]  # Estimated based on imbalance
     optimized_acc = [79, 93, 99]  # From paper results
     
@@ -464,17 +442,7 @@ def create_breakthrough_analysis():
         # New accuracy
         ax2.text(bar_new.get_x() + bar_new.get_width()/2., bar_new.get_height() + 1,
                 f'{optimized_acc[i]}%', ha='center', va='bottom', fontweight='bold', fontsize=11)
-        # Improvement arrow and text
-        if i == 2:  # Crop shows dramatic improvement
-            ax2.text(i, 65, improvement, ha='center', va='center', fontsize=12, fontweight='bold', 
-                    color='green', bbox=dict(boxstyle="round,pad=0.3", facecolor='yellow', alpha=0.8))
-    
-    # Add methodology explanation
-    fig.text(0.5, 0.02, 
-             'Key Insight: Different road distress conditions require different sensitivity levels for optimal detection.\n' +
-             'Damage (τ=0.50): Balanced approach | Occlusion (τ=0.40): High sensitivity | Crop (τ=0.49): Near-standard threshold',
-             ha='center', va='bottom', fontsize=11, style='italic',
-             bbox=dict(boxstyle="round,pad=0.5", facecolor='lightblue', alpha=0.7))
+
     
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.15)
